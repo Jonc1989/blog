@@ -1,0 +1,41 @@
+//@import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+
+body{
+  background: url("/images/bg.jpg");
+}
+#info{
+  height: 100px;
+}
+.ui-select-container input[disabled]{
+  display: none;
+}
+.ui-select-container [role=button]{
+  display: none;
+}
+.btn-default.ui-select-toggle{
+  background-color: rgba( 0, 0, 0, .1);
+  border-color: rgba( 0, 0, 0, 0 );
+  text-align: left;
+}
+.ui-select-container input.form-control{
+  background-color: rgba( 0, 0, 0, .1) !important;
+  color: white;
+  box-shadow: none;
+  border: none;
+}
+.ui-select-container input.form-control:focus, .ui-select-container input.form-control:active{
+  border-color: rgba( 0, 0, 0, 0);
+  //box-shadow: none;
+}
+.navbar {
+  margin-bottom: 0px;
+}
+:focus {
+  outline: -webkit-focus-ring-color auto 0px;
+}
+:focus {
+  //background-color: rgba(0, 0, 0, .1) !important;
+}
+.dropdown-menu .divider{
+  background-color: rgba(0, 0, 0, .1)
+}
