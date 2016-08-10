@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Users\Controllers;
+namespace App\Modules\Users\Controllers\api;
 
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
 use Illuminate\Http\Request;
@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
-
 class UserController extends Controller
 {
     /**
@@ -16,13 +15,12 @@ class UserController extends Controller
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user )
+    public function __construct(UsersRepositoryInterface $user)
     {
-        $this->middleware('auth');
         $this->user = $user;
-        \Blade::setEscapedContentTags( '<%%', '%%>' );
-        \Blade::setContentTags( '<%', '%>' );
+        //$this->middleware('auth');
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -46,7 +44,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -57,18 +55,19 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
-        return view('modules.users.user')->with( 'id', $id );
+        count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
+        return $this->user->find( $id, $fields );
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -79,8 +78,8 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -91,7 +90,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -100,12 +99,10 @@ class UserController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @param $key
      */
-    public function logout()
+    public function search($key)
     {
-        $this->user->updateOnlineStats(\Auth::user()->id, 0);
-        \Auth::logout();
-        return redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
+        return $this->user->searchBy('name', 'surname', $key);
     }
 }

@@ -9,7 +9,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Profila info</div>
                     <div class="panel-body">
-                        <info></info>
+                        <info ng-attr-id="<?= \Auth::user()->id; ?>"></info>
                     </div>
                 </div>
             </div>

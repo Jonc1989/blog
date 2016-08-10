@@ -17,6 +17,8 @@ class HomeController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('session.timeout');
+        \Blade::setEscapedContentTags( '<%%', '%%>' );
+        \Blade::setContentTags( '<%', '%>' );
     }
 
     /**

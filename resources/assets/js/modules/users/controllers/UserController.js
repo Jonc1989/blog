@@ -1,12 +1,12 @@
-user.controller( 'UserController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+user.controller( 'UserController', [ 'UserService', '$scope', '$location', function ( UserService, $scope, $location ) {
     $scope.user = null;
 
-    $scope.User = function ( id ) {
-        
+
+    this.$onInit = function () {
         var details = ['name', 'surname', 'photo'];
-        UserService.getUser( id, details ).then( function( response )
+        UserService.getUser( this.id, details ).then( function( response )
         {
-            $scope.user = response[0];
+            $scope.user = response;
         });
     };
     

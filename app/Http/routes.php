@@ -11,7 +11,7 @@
 |
 */
 
-Route::group( [ 'prefix' => 'api' ], function ()
+Route::group( [ 'prefix' => '/api' ], function ()
 {
     Route::get( 'view/{url}', 'Http\Controllers\ApiViewController@render' );
 });
