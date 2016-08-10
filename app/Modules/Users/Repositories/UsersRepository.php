@@ -23,4 +23,11 @@ class UsersRepository extends Repository implements UsersRepositoryInterface
         return $this->model->where( $attribute1, 'like', '%' . $value . '%')
             ->orWhere( $attribute2, 'like', '%' . $value . '%')->get();
     }
+
+    public function updateOnlineStats($id, $online)
+    {
+        $user = $this->model->find($id);
+        $user->online = $online;
+        $user->save();
+    }
 }

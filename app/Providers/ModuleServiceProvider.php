@@ -46,7 +46,7 @@ abstract class ModuleServiceProvider extends ServiceProvider
         // Pievienojam modļa routus un eventus
         $this->app->booted( function () use ( $dir, $namespace )
         {
-            require $dir . DIRECTORY_SEPARATOR . 'Events.php';
+            require $dir . DIRECTORY_SEPARATOR . 'events.php';
             require $dir . DIRECTORY_SEPARATOR . 'routes.php';
 
             // Pievienojam moduļa vārdvietas

@@ -11,4 +11,6 @@ interface UsersRepositoryInterface
 
     public function searchBy( $attribute1, $attribute2, $value );
 
+    public function updateOnlineStats($id, $online);
+
 }

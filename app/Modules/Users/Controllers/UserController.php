@@ -105,4 +105,14 @@ class UserController extends Controller
     {
         return $this->user->searchBy( 'name', 'surname', $key );
     }
+
+    /**
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function logout()
+    {
+        $this->user->updateOnlineStats(\Auth::user()->id, 0);
+        \Auth::logout();
+        return redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
+    }
 }
