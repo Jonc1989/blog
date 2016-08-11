@@ -13,4 +13,6 @@ interface UsersRepositoryInterface
 
     public function updateOnlineStats($id, $online);
 
+    public function onlineUsers( $details );
+
 }

@@ -6,7 +6,7 @@ use \Illuminate\Events\Dispatcher;
 class SessionTimeout
 {
     protected $session;
-    protected $timeout = 1200;
+    protected $timeout = 2400;
     protected $event;
 
     public function __construct( Store $session, Dispatcher $event ){

@@ -105,4 +105,11 @@ class UserController extends Controller
     {
         return $this->user->searchBy('name', 'surname', $key);
     }
+
+    
+    public function online()
+    {
+        count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
+        return $this->user->onlineUsers( $fields );
+    }
 }

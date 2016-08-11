@@ -3,25 +3,45 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
         var UserService = {
 
-                getUser:  function( id, details )
-                {
-                    var deferred = $q.defer();
-                    $http.get( '/api/users/' + id,
-                        {
-                            params: details
-                        })
-                        .success( function( response )
-                        {
-                            deferred.resolve( response );
-                        } )
-                        .error( function()
-                        {
-                            deferred.reject();
-                        } );
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
 
-                    return deferred.promise;
+                return deferred.promise;
 
-                },
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
 
             Users:  function()
             {

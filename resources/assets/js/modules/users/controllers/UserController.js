@@ -1,4 +1,4 @@
-user.controller( 'UserController', [ 'UserService', '$scope', '$location', function ( UserService, $scope, $location ) {
+user.controller( 'UserController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
 

@@ -13,6 +13,8 @@
                         </div>
                     </div>
                 </div>
+
+                <
             </div>
             <div class="col-md-12 col-md-offset-0">
                 <div class="col-md-3">
@@ -33,12 +35,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Online</div>
-                        <div class="panel-body">
-                            Custom Shiat
-                        </div>
-                    </div>
+                    <online></online>
                 </div>
             </div>
         </div>

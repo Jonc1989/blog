@@ -3,6 +3,7 @@
  */
 var app = angular.module( 'app', [
     'ngComponentRouter',
+    'home',
     'users'
 
 ] );

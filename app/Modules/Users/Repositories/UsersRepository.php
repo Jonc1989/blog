@@ -30,4 +30,9 @@ class UsersRepository extends Repository implements UsersRepositoryInterface
         $user->online = $online;
         $user->save();
     }
+    
+    public function onlineUsers( $details )
+    {
+        return $this->model->where( 'id', '!=', \Auth::user()->id )->where( 'online', 1 )->get( $details );
+    }
 }

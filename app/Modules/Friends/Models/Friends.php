@@ -16,7 +16,7 @@ class Friends extends Model {
      *
      * @var array
      */
-    protected $fillable = ['user_id', 'friend_id', 'request', 'friendship'];
+    protected $fillable = [ 'user_id', 'friend_id', 'request', 'friendship', 'invitation_text' ];
 
 
 }

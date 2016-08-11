@@ -3,9 +3,14 @@
  */
 var app = angular.module( 'app', [
     'ngComponentRouter',
+    'home',
     'users'
 
 ] );
+
+var home = angular.module('home', [
+
+]);
 
 var user = angular.module('users', [
     
@@ -21,10 +26,28 @@ app.component( 'info', {
         id: '<'
     }
 })
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
 app.component( 'search', {
     templateUrl: '/api/view/modules.home.api.search',
     controller: 'SearchController'
 })
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+            console.log(response)
+        });
+    };
+
+}]);
 user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
 
     $scope.searchKey = '';
@@ -59,7 +82,7 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
-user.controller( 'UserController', [ 'UserService', '$scope', '$location', function ( UserService, $scope, $location ) {
+user.controller( 'UserController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
 
@@ -77,25 +100,45 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
         var UserService = {
 
-                getUser:  function( id, details )
-                {
-                    var deferred = $q.defer();
-                    $http.get( '/api/users/' + id,
-                        {
-                            params: details
-                        })
-                        .success( function( response )
-                        {
-                            deferred.resolve( response );
-                        } )
-                        .error( function()
-                        {
-                            deferred.reject();
-                        } );
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
 
-                    return deferred.promise;
+                return deferred.promise;
 
-                },
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
 
             Users:  function()
             {
