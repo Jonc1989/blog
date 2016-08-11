@@ -11,6 +11,20 @@ var user = angular.module('users', [
     
 ]);
 
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'UserController',
+    bindings: {
+        id: '<'
+    }
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
 
     $scope.searchKey = '';
@@ -45,20 +59,19 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'UserController',
-    bindings: {
-        id: '<'
-    }
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
+user.controller( 'UserController', [ 'UserService', '$scope', '$location', function ( UserService, $scope, $location ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+    
+}]);
 user.service( 'UserService', ['$http', '$q', function( $http, $q )
     {
 
@@ -185,17 +198,4 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
         };
         return UserService;
     }] );
-user.controller( 'UserController', [ 'UserService', '$scope', '$location', function ( UserService, $scope, $location ) {
-    $scope.user = null;
-
-
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
 //# sourceMappingURL=all.js.map

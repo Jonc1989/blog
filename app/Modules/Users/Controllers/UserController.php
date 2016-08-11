@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function __construct( UsersRepositoryInterface $user )
     {
-        $this->middleware('auth');
+        //$this->middleware('auth');
         $this->user = $user;
         \Blade::setEscapedContentTags( '<%%', '%%>' );
         \Blade::setContentTags( '<%', '%>' );
