@@ -14,7 +14,9 @@
                     </div>
                 </div>
 
-                <
+                <div class="col-md-9">
+                    <invitation friendid="<?= $id ?>" myid="<?= Auth::user()->id ?>"></invitation>
+                </div>
             </div>
             <div class="col-md-12 col-md-offset-0">
                 <div class="col-md-3">

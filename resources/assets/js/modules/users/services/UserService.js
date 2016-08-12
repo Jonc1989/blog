@@ -59,10 +59,10 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             add: function(id)
+             invite: function(id)
              {
                  var deferred = $q.defer();
-                 $http.get( '/api/user/add/' + id )
+                 $http.get( '/api/users/add/' + id )
                      .success( function( response )
                      {
                          deferred.resolve( response );
@@ -74,6 +74,36 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
                  return deferred.promise;
              },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/user/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             invitations: function()
             {
                 var deferred = $q.defer();

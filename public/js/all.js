@@ -43,7 +43,6 @@ home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserS
         UserService.onlineUsers( details ).then( function( response )
         {
             $scope.users = response;
-            console.log(response)
         });
     };
 
@@ -82,12 +81,58 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+user.component( 'invitation', {
+    templateUrl: '/api/view/modules.users.api.invitation',
+    controller: 'InvitationController',
+    bindings: {
+        friendid: '<',
+        myid: '<'
+    }
+})
+user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.myId = null;
+    $scope.friendId = null;
+    $scope.friendStatus = null;
+
+
+    this.$onInit = function () {
+        $scope.friendId = this.friendid;
+        $scope.myId = this.myid;
+        UserService.getStatus($scope.friendId).then( function ( response ) {
+            console.log(response);
+
+            if(response.length == 0) {
+                $scope.friendStatus = 0; //nav draugi
+            }else if( response[0].user_id == $scope.myId ){
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 1; //uzaicinājums nosūtīts
+                }else{
+                    $scope.friendStatus = 2; //uzaicinājums apstiprināts
+                }
+            }else if( response[0].friend_id == $scope.friendId ){
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 3; //uzaicinājums saņemts
+                }else{
+                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju
+                }
+            }
+        });
+    };
+
+    $scope.invite = function () {
+        UserService.invite( $scope.friendId ).then( function( response )  {        });
+    };
+
+
+
+}]);
 user.controller( 'UserController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
 
     this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
+        var details = [ 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
             $scope.user = response;
@@ -156,10 +201,10 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             add: function(id)
+             invite: function(id)
              {
                  var deferred = $q.defer();
-                 $http.get( '/api/user/add/' + id )
+                 $http.get( '/api/users/add/' + id )
                      .success( function( response )
                      {
                          deferred.resolve( response );
@@ -171,6 +216,36 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
                  return deferred.promise;
              },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/user/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             invitations: function()
             {
                 var deferred = $q.defer();

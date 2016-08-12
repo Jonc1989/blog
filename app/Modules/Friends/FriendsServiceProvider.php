@@ -17,5 +17,8 @@ class FriendsServiceProvider extends ModuleServiceProvider
     public function register()
     {
         $this->bootModule(__DIR__, 'friends');
+
+        $this->app->bind('App\Modules\Friends\Repositories\FriendsRepositoryInterface',
+            'App\Modules\Friends\Repositories\FriendsRepository');
     }
 }

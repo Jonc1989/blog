@@ -6,7 +6,6 @@ home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserS
         UserService.onlineUsers( details ).then( function( response )
         {
             $scope.users = response;
-            console.log(response)
         });
     };
 
