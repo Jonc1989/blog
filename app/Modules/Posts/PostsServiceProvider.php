@@ -16,5 +16,8 @@ class PostsServiceProvider extends ModuleServiceProvider
     public function register()
     {
         $this->bootModule(__DIR__, 'posts');
+
+        $this->app->bind('App\Modules\Posts\Repositories\PostRepositoryInterface',
+            'App\Modules\Posts\Repositories\PostRepository');
     }
 }

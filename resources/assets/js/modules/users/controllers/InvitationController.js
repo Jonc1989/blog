@@ -26,6 +26,8 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju
                 }
             }
+            console.log( $scope.friendStatus );
+
         });
     };
 

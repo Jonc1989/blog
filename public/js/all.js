@@ -81,6 +81,86 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+app.controller( 'PostController', [ 'PostService', '$scope', function ( PostService, $scope ) {
+
+    $scope.postContent = null;
+    $scope.posts = [];
+    // $scope.wall = {
+    //     posts: [],
+    //     next_from: 0,
+    //     has_more: ''
+    //
+    // };
+
+    this.$onInit = function () {
+        PostService.getPosts().then(function ( response ) {
+            $scope.posts = response.data;
+            console.log(response.data);
+        });
+    };
+    
+    
+    $scope.savePost = function()
+    {console.log('click')
+        if( $scope.postContent != null )
+        {
+            PostService.save($scope.postContent).then( function( response )
+            {
+                $scope.$broadcast('post-added');
+                $scope.postContent = null;
+            });
+        }
+
+    };
+    
+}]);
+app.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController'
+})
+home.service( 'PostService', ['$http', '$q', function( $http, $q )
+    {
+        var PostService = {
+
+                save:  function(post)
+                {
+                    var data = {
+                        post: post
+                    };
+                    var deferred = $q.defer();
+                    $http.post( '/api/posts', data )
+                        .success( function( response )
+                        {
+                            deferred.resolve( response );
+                        } )
+                        .error( function()
+                        {
+                            deferred.reject();
+                        } );
+
+                    return deferred.promise;
+
+                },
+
+            getPosts:  function(next)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/posts'/*, { params: {per_page: next}}*/ )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return PostService;
+    }] );
 user.component( 'invitation', {
     templateUrl: '/api/view/modules.users.api.invitation',
     controller: 'InvitationController',
@@ -117,6 +197,8 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju
                 }
             }
+            console.log( $scope.friendStatus );
+
         });
     };
 

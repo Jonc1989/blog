@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Modules\Galleries\Controllers;
+namespace App\Modules\Posts\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use Illuminate\Http\Request;
-
-class GalleryController extends Controller
+use Illuminate\Support\Facades\Input;
+use App\Modules\Posts\Repositories\PostRepositoryInterface;
+class PostController extends Controller
 {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct( PostRepositoryInterface $posts )
     {
-        $this->middleware('guest');
+        $this->middleware('auth');
+        $this->posts = $posts;
     }
 
     /**
@@ -25,7 +27,8 @@ class GalleryController extends Controller
      */
     public function index()
     {
-        return view('modules.galleries.index');
+        $perPage = 15;
+        return $this->posts->paginate( $perPage );
     }
 
     /**
@@ -46,7 +49,12 @@ class GalleryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        \Log::info('store');
+        if( Input::get('post'))
+        {
+            /*return $this->respond(*/
+            $this->posts->createPost( Input::get('post') );
+        }
     }
 
     /**
