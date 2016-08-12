@@ -1,4 +1,4 @@
-home.service( 'PostService', ['$http', '$q', function( $http, $q )
+app.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 

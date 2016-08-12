@@ -4,33 +4,7 @@ body {
 #info {
   height: 100px; }
 
-.ui-select-container input[disabled] {
-  display: none; }
-
-.ui-select-container [role=button] {
-  display: none; }
-
-.btn-default.ui-select-toggle {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-color: transparent;
-  text-align: left; }
-
-.ui-select-container input.form-control {
-  background-color: rgba(0, 0, 0, 0.1) !important;
-  color: white;
-  box-shadow: none;
-  border: none; }
-
-.ui-select-container input.form-control:focus, .ui-select-container input.form-control:active {
-  border-color: transparent; }
-
-.navbar {
-  margin-bottom: 0px; }
-
-:focus {
-  outline: -webkit-focus-ring-color auto 0px; }
-
-.dropdown-menu .divider {
-  background-color: rgba(0, 0, 0, 0.1); }
+.angular-google-map-container {
+  height: 400px; }
 
 /*# sourceMappingURL=app.css.map */

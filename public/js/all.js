@@ -3,10 +3,18 @@
  */
 var app = angular.module( 'app', [
     'ngComponentRouter',
+    'uiGmapgoogle-maps',
     'home',
     'users'
 
-] );
+] ).config(
+    ['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
+        GoogleMapApiProviders.configure({
+            china: true,
+            libraries: 'weather,geometry,visualization,places'
+        });
+    }]
+);
 
 var home = angular.module('home', [
 
@@ -81,21 +89,34 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+app.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController'
+})
 app.controller( 'PostController', [ 'PostService', '$scope', function ( PostService, $scope ) {
 
     $scope.postContent = null;
     $scope.posts = [];
-    // $scope.wall = {
-    //     posts: [],
-    //     next_from: 0,
-    //     has_more: ''
-    //
-    // };
+    $scope.address = '';
+    $scope.map = { center: { latitude: 56.526248, longitude: 27.357412599999975 }, zoom: 15 };
+
+    $scope.findCoordinates = function (address) {
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({
+            "address": address
+        }, function(results) {
+            console.log(address);
+            $scope.map.center.latitude = results[0].geometry.location.lat()
+            $scope.map.center.longitude = results[0].geometry.location.lng()
+        });
+    };
+
+
+
 
     this.$onInit = function () {
         PostService.getPosts().then(function ( response ) {
             $scope.posts = response.data;
-            console.log(response.data);
         });
     };
     
@@ -114,11 +135,7 @@ app.controller( 'PostController', [ 'PostService', '$scope', function ( PostServ
     };
     
 }]);
-app.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController'
-})
-home.service( 'PostService', ['$http', '$q', function( $http, $q )
+app.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 
@@ -161,14 +178,6 @@ home.service( 'PostService', ['$http', '$q', function( $http, $q )
         };
         return PostService;
     }] );
-user.component( 'invitation', {
-    templateUrl: '/api/view/modules.users.api.invitation',
-    controller: 'InvitationController',
-    bindings: {
-        friendid: '<',
-        myid: '<'
-    }
-})
 user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
 
     $scope.myId = null;
@@ -222,6 +231,14 @@ user.controller( 'UserController', [ 'UserService', '$scope', function ( UserSer
     };
     
 }]);
+user.component( 'invitation', {
+    templateUrl: '/api/view/modules.users.api.invitation',
+    controller: 'InvitationController',
+    bindings: {
+        friendid: '<',
+        myid: '<'
+    }
+})
 user.service( 'UserService', ['$http', '$q', function( $http, $q )
     {
 
