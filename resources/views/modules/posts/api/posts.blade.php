@@ -29,10 +29,10 @@
         <div class="col-md-12">
             <div ng-bind="post.content"></div>
         </div>-->
-        <div class="col-md-6"><input ng-model="address" ng-change="findCoordinates(address)" type="text" class="form-control"></div>
+        <!--<div class="col-md-6"><input ng-model="address" ng-change="findCoordinates(address)" type="text" class="form-control"></div>
         <div class="col-md-12" id="map_canvas" ng-cloak>
             <ui-gmap-google-map  center="map.center" zoom="map.zoom"></ui-gmap-google-map>
-        </div>
+        </div>-->
 
 
     </div>
