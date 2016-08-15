@@ -9,9 +9,17 @@ class PostRepository extends Repository implements PostRepositoryInterface
         $this->model = $posts;
     }
 
-    public function posts()
+    public function posts( $per_page, $current_page, $id )
     {
-        return $this->model->with('user.profile', 'images')->orderBy('updated_at', 'DESC')->get();
+        $query = $this->model->with('user', 'files');
+
+        if( $id ){
+            $query = $query->where( 'user_id', $id );
+        }
+
+        return $query->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page );
+        
+        //return $this->model->with('user', 'files')->where( 'user_id', $id )->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page );
     }
 
     public function createPost( $data )

@@ -4,28 +4,29 @@ app.service( 'PostService', ['$http', '$q', function( $http, $q )
 
                 save:  function(post)
                 {
-                    var data = {
-                        post: post
-                    };
-                    var deferred = $q.defer();
-                    $http.post( '/api/posts', data )
-                        .success( function( response )
-                        {
-                            deferred.resolve( response );
-                        } )
-                        .error( function()
-                        {
-                            deferred.reject();
-                        } );
+                    if( post != '' ){
+                        var data = {
+                            post: post
+                        };
+                        var deferred = $q.defer();
+                        $http.post( '/api/posts', data )
+                            .success( function( response )
+                            {
+                                deferred.resolve( response );
+                            } )
+                            .error( function()
+                            {
+                                deferred.reject();
+                            } );
 
-                    return deferred.promise;
-
+                        return deferred.promise;
+                    }
                 },
 
-            getPosts:  function(next)
+            getPosts:  function( perPage, current, id )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/posts'/*, { params: {per_page: next}}*/ )
+                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
                     .success( function( response )
                     {
                         deferred.resolve( response );

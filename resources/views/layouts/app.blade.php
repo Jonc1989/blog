@@ -82,9 +82,10 @@
     <script src="https://cdn.jsdelivr.net/lodash/4.14.2/lodash.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular.min.js"></script>
     <script src="http://cdn.rawgit.com/nmccready/angular-simple-logger/master/dist/angular-simple-logger.js"></script>
-    <script src='//maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCF3IrXpem5Lcg-jrIGr-JPLuATMs2str8'></script>
-    <script src="js/vendor/angular-google-maps.min.js"></script>
-
+    <script src='//maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCF3IrXpem5Lcg-jrIGr-JPLuATMs2str8&libraries=places'></script>
+    <script src="/js/vendor/angular-google-maps.min.js"></script>
+    <script src="/js/vendor/ng-file-upload-shim.min.js"></script> <!-- for no html5 browsers support -->
+    <script src="/js/vendor/ng-file-upload.min.js"></script>
     <script src="/js/vendor/core.js"></script>
     <script src="/js/all.js"></script>
 </body>

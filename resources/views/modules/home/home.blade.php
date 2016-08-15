@@ -27,7 +27,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Wall</div>
                     <div class="panel-body">
-                        <posts></posts>
+                        <posts ng-attr-userid=""></posts>
                     </div>
                 </div>
             </div>

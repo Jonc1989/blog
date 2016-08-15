@@ -2,22 +2,24 @@
 
 namespace App\Modules\Posts\Controllers\api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use App\Modules\Posts\Repositories\PostRepositoryInterface;
-class PostController extends Controller
+use App\Modules\Galleries\Repositories\FileRepositoryInterface;
+class PostController extends ApiController
 {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct( PostRepositoryInterface $posts )
+    public function __construct( PostRepositoryInterface $posts, FileRepositoryInterface $files )
     {
-        $this->middleware('auth');
+        //$this->middleware('auth');
         $this->posts = $posts;
+        $this->files = $files;
     }
 
     /**
@@ -27,8 +29,10 @@ class PostController extends Controller
      */
     public function index()
     {
-        $perPage = 15;
-        return $this->posts->paginate( $perPage );
+        Input::get('id') != null ?  $id = Input::get('id') : $id = null;
+        Input::get('per_page') != null ?  $per_page = Input::get('per_page') : $per_page = 15;
+        Input::get('current') != null ?  $current_page = Input::get('current') : $current_page = 1;
+        return $this->posts->posts( $per_page, $current_page, $id );
     }
 
     /**
@@ -49,11 +53,9 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('store');
         if( Input::get('post'))
         {
-            /*return $this->respond(*/
-            $this->posts->createPost( Input::get('post') );
+            return $this->respond( $this->posts->createPost( Input::get('post') ));
         }
     }
 
@@ -100,5 +102,46 @@ class PostController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function save_file()
+    {
+        $files = Input::file( 'files');
+        $response = null;
+        $path = storage_path() . '\users\\' . \Auth::user()->id . '\posts\\' . Input::get('id');
+        $thumb_path = storage_path() . '\users\\' . \Auth::user()->id . '\posts\\' . Input::get('id') . '\thumbnails';
+
+        $max_size = 2097152;
+
+        foreach( $files as $file )
+        {
+            $imageName = str_random(30) . '.' . $file->getClientOriginalExtension();
+
+            if($file->getSize() < $max_size)
+            {
+                $response = $file->move( $path, $imageName );
+
+//                $manager     = new ImageManager();
+//                $height = $manager->make($path.$imageName)->height();
+//                $width = $manager->make($path.$imageName)->width();
+//
+//                $index = $width / $height;
+//
+//                $manager->make($path.$imageName)->resize( (228 * $index), 228 )
+//                    ->crop(228, 228)->save($thumb_path . $imageName);
+
+                $data = $this->files->create([
+                    'file_name'      => $imageName,
+                    'thumb'         => $imageName,
+                    'original_name' => $file->getClientOriginalName(),
+                    'post_id'    => Input::get('id')
+                ]);
+
+                
+            }else{
+                return $this->respondError();
+            }
+        }
+        return $this->respondSuccess( null, $files );
     }
 }

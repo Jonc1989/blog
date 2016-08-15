@@ -4,6 +4,7 @@
 var app = angular.module( 'app', [
     'ngComponentRouter',
     'uiGmapgoogle-maps',
+    'ngFileUpload',
     'home',
     'users'
 
@@ -11,7 +12,7 @@ var app = angular.module( 'app', [
     ['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
         GoogleMapApiProviders.configure({
             china: true,
-            libraries: 'weather,geometry,visualization,places'
+            libraries: 'weather,geometry,visualization'
         });
     }]
 );

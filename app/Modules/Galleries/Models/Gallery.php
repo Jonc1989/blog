@@ -18,8 +18,8 @@ class Gallery extends Model {
      */
     protected $fillable = [ 'name', 'user_id'];
 
-    public function images()
+    public function files()
     {
-        return $this->hasMany('App\Modules\Galleries\Models\Images', 'gallery_id');
+        return $this->hasMany('App\Modules\Galleries\Models\Files', 'gallery_id');
     }
 }

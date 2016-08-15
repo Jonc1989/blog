@@ -11,11 +11,16 @@ class Posts extends Model {
      *
      * @var array
      */
-    protected $fillable = [ 'content', 'user_id', 'post_type', 'content_id' ];
+    protected $fillable = [ 'name', 'content', 'user_id', 'post_type', 'content_id' ];
 
     public function user()
     {
-        return $this->belongsTo('App\Modules\Users\Models', 'user_id');
+        return $this->belongsTo('App\Modules\Users\Models\User', 'user_id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany('App\Modules\Galleries\Models\Files', 'post_id');
     }
 
 }

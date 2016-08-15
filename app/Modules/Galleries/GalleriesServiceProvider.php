@@ -17,5 +17,8 @@ class GalleriesServiceProvider extends ModuleServiceProvider
     public function register()
     {
         $this->bootModule(__DIR__, 'galleries');
+
+        $this->app->bind('App\Modules\Galleries\Repositories\FileRepositoryInterface',
+            'App\Modules\Galleries\Repositories\FileRepository');
     }
 }
