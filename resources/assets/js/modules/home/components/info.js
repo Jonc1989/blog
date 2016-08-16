@@ -3,7 +3,7 @@
  */
 app.component( 'info', {
     templateUrl: '/api/view/modules.home.api.info',
-    controller: 'UserController',
+    controller: 'InfoController',
     bindings: {
         id: '<'
     }

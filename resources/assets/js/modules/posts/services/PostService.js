@@ -1,4 +1,4 @@
-app.service( 'PostService', ['$http', '$q', function( $http, $q )
+post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 
@@ -28,7 +28,7 @@ app.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             getPosts:  function( perPage, current, id )
             {
-                var deferred = $q.defer();
+                var deferred = $q.defer(); console.log(id);
                 $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
                     .success( function( response )
                     {

@@ -2,6 +2,7 @@
 
 use App\Modules\Friends\Models\Friends;
 use App\Http\Repositories\Repository;
+use Illuminate\Support\Facades\DB;
 class FriendsRepository extends Repository implements FriendsRepositoryInterface
 {
 
@@ -31,6 +32,40 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
         return $this->model->where( 'user_id', \Auth::user()->id )
             ->where( 'friend_id', $id )->get();
     }
+
+    public function userFriends( $id )
+    {
+        $query = $this->model
+            ->join('users', function ($join, $id){
+                $join->on( 'users.id', '=', 'friends.friend_id')
+                    ->where( 'friends.user_id', '=', $id )
+            })->get()
+
+
+// $join->on('users.id', '=', 'contacts.user_id')->orOn(...);
+        //return DB::raw( "SELECT * FROM friends AS f LEFT JOIN users AS u ON (u.id=f.user_id and " . $id . " = f.friend_id) or (u.id=f.friend_id and " . $id . " = f.user_id) WHERE f.user_id=" . $id .
+        //    " OR f.friend_id=" . $id);
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function invitations($id)
     {

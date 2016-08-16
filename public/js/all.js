@@ -2,11 +2,16 @@
  * Created by Janis on 06.08.2016..
  */
 var app = angular.module( 'app', [
-    'ngComponentRouter',
+    //'ngComponentRouter',
+    'ui.router',
     'uiGmapgoogle-maps',
     'ngFileUpload',
     'home',
-    'users'
+    'posts',
+    'users',
+    // function () {
+    //     app.value("$routerRootComponent", "userInfo");
+    // }
 
 ] ).config(
     ['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
@@ -21,68 +26,133 @@ var home = angular.module('home', [
 
 ]);
 
-var user = angular.module('users', [
-    
+var post = angular.module('posts', [
+
 ]);
 
-app.component( 'posts', {
+var user = angular.module('users', [ function () {
+    
+
+}])
+    .config(function($stateProvider, $urlRouterProvider) {
+        //
+        // For any unmatched url, redirect to /state1
+        $urlRouterProvider.otherwise("/");
+        //
+        // Now set up the states
+        $stateProvider
+            .state('posts', {
+                url: "/",
+                templateUrl: "/api/view/modules.posts.api.posts",
+                controller: "PostController",
+                params: {
+                    id: null
+                }
+            })
+            .state('friends', {
+                url: "/friends",
+                templateUrl: "/api/view/modules.users.api.friends",
+                controller: 'FriendsController',
+                params: {
+                    id: null
+                }
+            });
+    });
+
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+    // $scope.init = function (id) {
+    //     this.id = id;
+    //    
+    // };
+
+    this.$onInit = function () {
+        var details = [ 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            console.log(response);
+            $scope.user = response;
+        });
+    };
+    
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
+post.component( 'posts', {
     templateUrl: '/api/view/modules.posts.api.posts',
     controller: 'PostController',
     bindings: {
         userid: '<'
     }
 })
-app.service( 'PostService', ['$http', '$q', function( $http, $q )
-    {
-        var PostService = {
-
-                save:  function(post, location, lat, lng)
-                {
-                    if( post != '' ){
-                        var data = {
-                            post: post,
-                            location: location,
-                            latitude: lat,
-                            longitude: lng
-                        };
-                        var deferred = $q.defer();
-                        $http.post( '/api/posts', data )
-                            .success( function( response )
-                            {
-                                deferred.resolve( response );
-                            } )
-                            .error( function()
-                            {
-                                deferred.reject();
-                            } );
-
-                        return deferred.promise;
-                    }
-                },
-
-            getPosts:  function( perPage, current, id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return PostService;
-    }] );
-app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function ( PostService, $scope, Upload ) {
+post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', function ( PostService, $scope, Upload, $stateParams, $rootScope ) {
 
     $scope.postContent = null;
-    $scope.userid = null;
+    $scope.id = null;
     $scope.posts = [];
     $scope.post = {
         content: '',
@@ -100,10 +170,13 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
     $scope.per_page = 5;
     $scope.loading = false;
 
+
+
     this.$onInit = function () {
+
+        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
         var input = document.getElementById('search-box');
         $scope.searchBox = new google.maps.places.SearchBox(input);
-        $scope.userid = this.userid;
         $scope.getPosts();
 
         $scope.searchBox.addListener('places_changed', $scope.setLocation);
@@ -113,7 +186,6 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
     $scope.setLocation = function () {
         var places =  $scope.searchBox.getPlaces();
-        console.log(places);
         $scope.post.location = places[0].formatted_address;
         $scope.post.latitude = places[0].geometry.location.lat();
         $scope.post.longitude = places[0].geometry.location.lng();
@@ -130,7 +202,7 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.userid  ).then(function ( response ) { console.log(response);
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
 
                 if( update ){
@@ -201,70 +273,59 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
 
 }]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.users = [];
-    
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.onlineUsers( details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
+post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
+        var PostService = {
+
+                save:  function(post, location, lat, lng)
+                {
+                    if( post != '' ){
+                        var data = {
+                            post: post,
+                            location: location,
+                            latitude: lat,
+                            longitude: lng
+                        };
+                        var deferred = $q.defer();
+                        $http.post( '/api/posts', data )
+                            .success( function( response )
+                            {
+                                deferred.resolve( response );
+                            } )
+                            .error( function()
+                            {
+                                deferred.reject();
+                            } );
+
+                        return deferred.promise;
+                    }
+                },
+
+            getPosts:  function( perPage, current, id )
             {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
+                var deferred = $q.defer(); console.log(id);
+                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
 
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
+                return deferred.promise;
 
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'UserController',
+            }
+        };
+        return PostService;
+    }] );
+user.component( 'friends', {
+    templateUrl: '/api/view/modules.users.api.friends',
+    controller: 'FriendsController',
     bindings: {
-        id: '<'
+        id: '<',
     }
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
 })
 user.component( 'invitation', {
     templateUrl: '/api/view/modules.users.api.invitation',
@@ -274,6 +335,34 @@ user.component( 'invitation', {
         myid: '<'
     }
 })
+/**
+ * Created by Admin on 16.08.2016..
+ */
+app.component( 'userInfo', {
+    templateUrl: '/api/view/modules.users.api.user-info',
+    controller: 'UserController',
+    // $routeConfig: [
+    //     { path: "/", component: "posts", name: "posts", useAsDefault: true }
+    // ],
+    bindings: {
+        id: '<'
+    }
+})
+user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', function ( UserService, $scope, $stateParams ) {
+    $scope.user = null;
+
+    $scope.id = null;
+
+    this.$onInit = function () {
+        $scope.id = $stateParams.id;
+        UserService.getFriends( $scope.id ).then( function( response )
+        {
+            console.log(response);
+            $scope.user = response;
+        });
+    };
+
+}]);
 user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
 
     $scope.myId = null;
@@ -285,7 +374,6 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
         $scope.friendId = this.friendid;
         $scope.myId = this.myid;
         UserService.getStatus($scope.friendId).then( function ( response ) {
-            console.log(response);
 
             if(response.length == 0) {
                 $scope.friendStatus = 0; //nav draugi
@@ -302,7 +390,7 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju
                 }
             }
-            console.log( $scope.friendStatus );
+            //console.log( $scope.friendStatus );
 
         });
     };
@@ -314,16 +402,21 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
 
 
 }]);
-user.controller( 'UserController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+user.controller( 'UserController', [ 'UserService', '$scope', '$rootScope', function ( UserService, $scope, $rootScope ) {
     $scope.user = null;
 
-
-    this.$onInit = function () {
+    $scope.init = function (id) {
+        $rootScope.userId = id;
+        this.id = id;
         var details = [ 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
             $scope.user = response;
         });
+    };
+
+    this.$onInit = function (id) {
+       
     };
     
 }]);
@@ -372,10 +465,10 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
             },
 
-            Users:  function()
+            getFriends:  function( id )
             {
                 var deferred = $q.defer();
-                $http.get( 'api/users' )
+                $http.get( '/api/user/friends/' + id )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -420,19 +513,6 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             invitations: function()
             {
                 var deferred = $q.defer();

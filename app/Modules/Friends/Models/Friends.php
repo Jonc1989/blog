@@ -18,5 +18,8 @@ class Friends extends Model {
      */
     protected $fillable = [ 'user_id', 'friend_id', 'request', 'friendship', 'invitation_text' ];
 
-
+    public function user()
+    {
+        return $this->belongsTo('App\Modules\Users\Models\User', 'user_id');
+    }
 }

@@ -10,6 +10,8 @@ interface FriendsRepositoryInterface
 
     public function friendshipStatus( $id );
 
+    public function userFriends( $id );
+
     public function invitations($id);
 
     public function accept( $user, $invitor);

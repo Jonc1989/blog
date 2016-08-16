@@ -43,10 +43,10 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
             },
 
-            Users:  function()
+            getFriends:  function( id )
             {
                 var deferred = $q.defer();
-                $http.get( 'api/users' )
+                $http.get( '/api/user/friends/' + id )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -91,19 +91,6 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
             invitations: function()
             {
                 var deferred = $q.defer();

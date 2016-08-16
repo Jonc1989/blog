@@ -9,7 +9,6 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
         $scope.friendId = this.friendid;
         $scope.myId = this.myid;
         UserService.getStatus($scope.friendId).then( function ( response ) {
-            console.log(response);
 
             if(response.length == 0) {
                 $scope.friendStatus = 0; //nav draugi
@@ -26,7 +25,7 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju
                 }
             }
-            console.log( $scope.friendStatus );
+            //console.log( $scope.friendStatus );
 
         });
     };

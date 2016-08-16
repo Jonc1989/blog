@@ -1,3 +1,6 @@
+html, body {
+  height: 100%; }
+
 body {
   background: url("/images/bg.jpg");
   background-repeat: no-repeat;
@@ -15,5 +18,8 @@ body {
 
 #search-box {
   display: none; }
+
+#search-results {
+  z-index: 1; }
 
 /*# sourceMappingURL=app.css.map */

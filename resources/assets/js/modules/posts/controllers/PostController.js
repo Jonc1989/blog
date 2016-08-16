@@ -1,7 +1,7 @@
-app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function ( PostService, $scope, Upload ) {
+post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', function ( PostService, $scope, Upload, $stateParams, $rootScope ) {
 
     $scope.postContent = null;
-    $scope.userid = null;
+    $scope.id = null;
     $scope.posts = [];
     $scope.post = {
         content: '',
@@ -19,10 +19,13 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
     $scope.per_page = 5;
     $scope.loading = false;
 
+
+
     this.$onInit = function () {
+
+        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
         var input = document.getElementById('search-box');
         $scope.searchBox = new google.maps.places.SearchBox(input);
-        $scope.userid = this.userid;
         $scope.getPosts();
 
         $scope.searchBox.addListener('places_changed', $scope.setLocation);
@@ -32,7 +35,6 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
     $scope.setLocation = function () {
         var places =  $scope.searchBox.getPlaces();
-        console.log(places);
         $scope.post.location = places[0].formatted_address;
         $scope.post.latitude = places[0].geometry.location.lat();
         $scope.post.longitude = places[0].geometry.location.lng();
@@ -49,7 +51,7 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.userid  ).then(function ( response ) { console.log(response);
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
 
                 if( update ){
