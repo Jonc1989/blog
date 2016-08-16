@@ -97,57 +97,20 @@ app.component( 'posts', {
         userid: '<'
     }
 })
-app.service( 'PostService', ['$http', '$q', function( $http, $q )
-    {
-        var PostService = {
-
-                save:  function(post)
-                {
-                    if( post != '' ){
-                        var data = {
-                            post: post
-                        };
-                        var deferred = $q.defer();
-                        $http.post( '/api/posts', data )
-                            .success( function( response )
-                            {
-                                deferred.resolve( response );
-                            } )
-                            .error( function()
-                            {
-                                deferred.reject();
-                            } );
-
-                        return deferred.promise;
-                    }
-                },
-
-            getPosts:  function( perPage, current, id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return PostService;
-    }] );
 app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function ( PostService, $scope, Upload ) {
 
     $scope.postContent = null;
     $scope.userid = null;
     $scope.posts = [];
-    $scope.address = '';
-    $scope.map = { center: { latitude: 56.526248, longitude: 27.357412599999975 }, zoom: 15 };
+    $scope.post = {
+        content: '',
+        location: '',
+        latitude: '',
+        longitude: ''
+    };
+
+
+    //$scope.map = { center: { latitude: 56.526248, longitude: 27.357412599999975 }, zoom: 15 };
     $scope.searchBox = null;
     
     $scope.current_page = 1;
@@ -162,16 +125,17 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
         $scope.userid = this.userid;
         $scope.getPosts();
 
-        $scope.searchBox.addListener('places_changed', function() {
-            var places =  $scope.searchBox.getPlaces();
-            console.log(places);
-            $scope.map.center.latitude = places[0].geometry.location.lat()
-            $scope.map.center.longitude = places[0].geometry.location.lng()
+        $scope.searchBox.addListener('places_changed', $scope.setLocation);
 
 
-        });
+    };
 
-
+    $scope.setLocation = function () {
+        var places =  $scope.searchBox.getPlaces();
+        console.log(places);
+        $scope.post.location = places[0].formatted_address;
+        $scope.post.latitude = places[0].geometry.location.lat();
+        $scope.post.longitude = places[0].geometry.location.lng();
     };
     
     $(window).scroll(function() {
@@ -213,9 +177,11 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
     };
 
     $scope.savePost = function() {
-        if( $scope.postContent != null || $scope.files != undefined )
+        if( $scope.postContent != null )
         {
-            PostService.save($scope.postContent).then( function( response )
+
+            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude )
+                .then( function( response )
             {
                 if( $scope.files != undefined )
                 {
@@ -238,7 +204,7 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
     $scope.details = {};
 
     $scope.addLocation = function () {
-
+        $('#search-box').show();
 
 
     };
@@ -251,6 +217,53 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
 
 
 }]);
+app.service( 'PostService', ['$http', '$q', function( $http, $q )
+    {
+        var PostService = {
+
+                save:  function(post, location, lat, lng)
+                {
+                    if( post != '' ){
+                        var data = {
+                            post: post,
+                            location: location,
+                            latitude: lat,
+                            longitude: lng
+                        };
+                        var deferred = $q.defer();
+                        $http.post( '/api/posts', data )
+                            .success( function( response )
+                            {
+                                deferred.resolve( response );
+                            } )
+                            .error( function()
+                            {
+                                deferred.reject();
+                            } );
+
+                        return deferred.promise;
+                    }
+                },
+
+            getPosts:  function( perPage, current, id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return PostService;
+    }] );
 user.component( 'invitation', {
     templateUrl: '/api/view/modules.users.api.invitation',
     controller: 'InvitationController',

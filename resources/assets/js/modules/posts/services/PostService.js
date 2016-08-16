@@ -2,11 +2,14 @@ app.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 
-                save:  function(post)
+                save:  function(post, location, lat, lng)
                 {
                     if( post != '' ){
                         var data = {
-                            post: post
+                            post: post,
+                            location: location,
+                            latitude: lat,
+                            longitude: lng
                         };
                         var deferred = $q.defer();
                         $http.post( '/api/posts', data )

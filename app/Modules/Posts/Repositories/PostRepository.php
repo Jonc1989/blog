@@ -25,9 +25,17 @@ class PostRepository extends Repository implements PostRepositoryInterface
     public function createPost( $data )
     {
         $post = new Posts();
-        $post->content = $data;
+        $post->content = $data['post'];
         $post->user_id = \Auth::user()->id;
         $post->save();
+
+        $location = [
+            'address'   => $data['location'],
+            'latitude'  => $data['latitude'],
+            'longitude'  => $data['longitude']
+        ];
+        $post->location()->insert($location);
+
         return $post->id;
     }
 }

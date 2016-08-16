@@ -11,7 +11,7 @@ class Posts extends Model {
      *
      * @var array
      */
-    protected $fillable = [ 'name', 'content', 'user_id', 'post_type', 'content_id' ];
+    protected $fillable = [ 'name', 'content', 'user_id', 'post_type', 'content_id', 'location_id' ];
 
     public function user()
     {
@@ -21,6 +21,11 @@ class Posts extends Model {
     public function files()
     {
         return $this->hasMany('App\Modules\Galleries\Models\Files', 'post_id');
+    }
+
+    public function location()
+    {
+        return $this->belongsTo('App\Modules\Common\Models\Address', 'location_id');
     }
 
 }

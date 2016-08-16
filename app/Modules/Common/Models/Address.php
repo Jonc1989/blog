@@ -18,10 +18,6 @@ class Address extends Model {
     {
         return $this->belongsTo('App\Modules\Users\Models\User', 'user_id');
     }
-
-    public function post()
-    {
-        return $this->belongsTo('App\Modules\Posts\Models\Posts', 'post_id');
-    }
+    
 
 }

@@ -55,7 +55,7 @@ class PostController extends ApiController
     {
         if( Input::get('post'))
         {
-            return $this->respond( $this->posts->createPost( Input::get('post') ));
+            return $this->respond( $this->posts->createPost( Input::all() ));
         }
     }
 
