@@ -19,13 +19,6 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
             'request'       => '1',
             'friendship'    => '0'
         ]);
-//
-//        $this->model->create([
-//            'user_id'       => $id,
-//            'friend_id'     => \Auth::user()->id,
-//            'request'       => '1',
-//            'friendship'    => '0'
-//        ]);
     }
 
     public function friendshipStatus( $id ){
@@ -35,18 +28,13 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
 
     public function userFriends( $id )
     {
-        $query = $this->model
-            ->join('users', function ($join, $id){
+        return $this->model
+            ->join('users', function ($join) use ( $id ){
                 $join->on( 'users.id', '=', 'friends.friend_id')
                     ->where( 'friends.user_id', '=', $id )
-            })->get()
-
-
-// $join->on('users.id', '=', 'contacts.user_id')->orOn(...);
-        //return DB::raw( "SELECT * FROM friends AS f LEFT JOIN users AS u ON (u.id=f.user_id and " . $id . " = f.friend_id) or (u.id=f.friend_id and " . $id . " = f.user_id) WHERE f.user_id=" . $id .
-        //    " OR f.friend_id=" . $id);
-
-
+                ->orOn( 'users.id', '=', 'friends.user_id')
+                    ->where( 'friends.friend_id', '=', $id );
+            })->get();
     }
 
 

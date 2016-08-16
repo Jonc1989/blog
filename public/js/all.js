@@ -348,17 +348,18 @@ app.component( 'userInfo', {
         id: '<'
     }
 })
-user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', function ( UserService, $scope, $stateParams ) {
-    $scope.user = null;
+user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
+    function ( UserService, $scope, $stateParams, $rootScope ) {
+    $scope.users = [];
 
     $scope.id = null;
 
     this.$onInit = function () {
-        $scope.id = $stateParams.id;
+        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
         UserService.getFriends( $scope.id ).then( function( response )
         {
             console.log(response);
-            $scope.user = response;
+            $scope.users = response;
         });
     };
 

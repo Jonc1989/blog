@@ -28,17 +28,16 @@
                     <invitation friendid="<?= $id ?>" myid="<?= Auth::user()->id ?>"></invitation>
                 </div>
             </div>
-            <div class="col-md-12">
-                <a ui-sref="posts({ id: <?= $id ?>})">Posts</a>
-                <a ui-sref="friends({ id: <?= $id ?>})">Friends</a>
 
-            </div>
             <div class="col-md-9 col-md-offset-0">
 
 
                 <div class="col-md-12">
                     <div class="panel panel-default">
-                        <div class="panel-heading">Wall</div>
+                        <div class="panel-heading">
+                            <a ui-sref="posts({ id: <?= $id ?>})">Posts</a>
+                            <a ui-sref="friends({ id: <?= $id ?>})">Friends</a>
+                        </div>
                         <div class="panel-body">
 
                             <div ui-view></div>
