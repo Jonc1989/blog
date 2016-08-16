@@ -3,9 +3,9 @@ namespace App\Modules\Common\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Address extends Model {
+class Location extends Model {
 
-    protected $table = 'address';
+    protected $table = 'location';
 
     /**
      * The attributes that are mass assignable.
@@ -14,10 +14,7 @@ class Address extends Model {
      */
     protected $fillable = [ 'id', 'address', 'latitude', 'longitude', 'user_id' ];
 
-    public function user()
-    {
-        return $this->belongsTo('App\Modules\Users\Models\User', 'user_id');
-    }
+    
     
 
 }

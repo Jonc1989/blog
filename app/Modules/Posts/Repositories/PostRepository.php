@@ -1,5 +1,6 @@
 <?php namespace App\Modules\Posts\Repositories;
 
+use App\Modules\Common\Models\Location;
 use App\Modules\Posts\Models\Posts;
 use App\Http\Repositories\Repository;
 class PostRepository extends Repository implements PostRepositoryInterface
@@ -11,7 +12,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
 
     public function posts( $per_page, $current_page, $id )
     {
-        $query = $this->model->with('user', 'files');
+        $query = $this->model->with( 'user', 'files', 'location' );
 
         if( $id ){
             $query = $query->where( 'user_id', $id );
@@ -27,15 +28,19 @@ class PostRepository extends Repository implements PostRepositoryInterface
         $post = new Posts();
         $post->content = $data['post'];
         $post->user_id = \Auth::user()->id;
+
+        if( $data['location'] != '' ){
+            $location = new Location();
+            $location->address = $data['location'];
+            $location->latitude = $data['latitude'];
+            $location->longitude = $data['longitude'];
+            $location->save();
+            $post->location_id = $location->id;
+        }
+
+        
+
         $post->save();
-
-        $location = [
-            'address'   => $data['location'],
-            'latitude'  => $data['latitude'],
-            'longitude'  => $data['longitude']
-        ];
-        $post->location()->insert($location);
-
         return $post->id;
     }
 }

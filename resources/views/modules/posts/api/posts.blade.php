@@ -35,22 +35,22 @@
 
 
 <div class="posts col-md-12" >
-    <div class="row post" ng-repeat="post in posts">
+    <div class="row post" ng-repeat="post in posts" style="margin-bottom: 20px;">
         <div class="col-md-12">
-            <div class="pull-right">
-                <span ng-bind="post.created_at"></span>
+            <div >
+                <span ng-bind="post.user.name + ' '"></span>
+                <span ng-bind="post.user.surname"></span>
+                <span ng-if="post.location" ng-bind="'@ ' + post.location.address"></span>
+                <span class="pull-right" ng-bind="post.created_at"></span>
             </div>
         </div>
         <div class="col-md-12">
             <div ng-bind="post.content"></div>
         </div>
-        <div class="col-md-6"><input ng-model="address" type="text" class="form-control"></div>
-        <div class="col-md-12" id="map_canvas">
-            <ui-gmap-google-map  center="map.center" zoom="map.zoom"></ui-gmap-google-map>
+
+        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12" id="map_canvas">
+            <ui-gmap-google-map  center="{ latitude: post.location.latitude, longitude: post.location.longitude }" zoom="8"></ui-gmap-google-map>
         </div>
-
-
-
     </div>
     <div class="loader-wrap" style="position: relative" ng-class="{ hidden : !loading}">Loading</div>
 

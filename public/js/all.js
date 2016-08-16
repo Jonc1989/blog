@@ -25,71 +25,6 @@ var user = angular.module('users', [
     
 ]);
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'UserController',
-    bindings: {
-        id: '<'
-    }
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.users = [];
-    
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.onlineUsers( details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
 app.component( 'posts', {
     templateUrl: '/api/view/modules.posts.api.posts',
     controller: 'PostController',
@@ -97,126 +32,6 @@ app.component( 'posts', {
         userid: '<'
     }
 })
-app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function ( PostService, $scope, Upload ) {
-
-    $scope.postContent = null;
-    $scope.userid = null;
-    $scope.posts = [];
-    $scope.post = {
-        content: '',
-        location: '',
-        latitude: '',
-        longitude: ''
-    };
-
-
-    //$scope.map = { center: { latitude: 56.526248, longitude: 27.357412599999975 }, zoom: 15 };
-    $scope.searchBox = null;
-    
-    $scope.current_page = 1;
-    $scope.last_page = undefined;
-    $scope.next_page = 1;
-    $scope.per_page = 2;
-    $scope.loading = false;
-
-    this.$onInit = function () {
-        var input = document.getElementById('search-box');
-        $scope.searchBox = new google.maps.places.SearchBox(input);
-        $scope.userid = this.userid;
-        $scope.getPosts();
-
-        $scope.searchBox.addListener('places_changed', $scope.setLocation);
-
-
-    };
-
-    $scope.setLocation = function () {
-        var places =  $scope.searchBox.getPlaces();
-        console.log(places);
-        $scope.post.location = places[0].formatted_address;
-        $scope.post.latitude = places[0].geometry.location.lat();
-        $scope.post.longitude = places[0].geometry.location.lng();
-    };
-    
-    $(window).scroll(function() {
-        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
-            if($scope.current_page != $scope.last_page){
-                $scope.getPosts();
-            }
-        }
-    });
-
-    // $scope.findCoordinates = function (address) {
-    //     var geocoder = new google.maps.Geocoder();
-    //     geocoder.geocode({
-    //         "address": address
-    //     }, function(results) {
-    //         console.log(address);
-    //         $scope.map.center.latitude = results[0].geometry.location.lat()
-    //         $scope.map.center.longitude = results[0].geometry.location.lng()
-    //     });
-    // };
-
-
-    $scope.getPosts = function () {
-        $scope.loading = true;
-        PostService.getPosts( $scope.per_page, $scope.next_page, $scope.userid  ).then(function ( response ) {
-            if( response.current_page <= response.last_page ){
-
-                response.data.forEach(function (post) {
-                    $scope.posts.push( post );
-                });
-
-                $scope.next_page = response.current_page + 1;
-                $scope.per_page = response.per_page;
-                $scope.current_page = response.current_page;
-                $scope.last_page = response.last_page;
-            }
-            $scope.loading = false;
-        });
-    };
-
-    $scope.savePost = function() {
-        if( $scope.postContent != null )
-        {
-
-            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude )
-                .then( function( response )
-            {
-                if( $scope.files != undefined )
-                {
-                    var id = response;
-                    Upload.upload({
-                        url: '/api/posts/save-file',
-                        data: { files: $scope.files, id: id }}
-                    )
-                        .success(function (response) {
-                            $scope.files = null;
-                        });
-                }
-
-                $scope.$broadcast('post-added');
-                $scope.postContent = null;
-            });
-        }
-    };
-
-    $scope.details = {};
-
-    $scope.addLocation = function () {
-        $('#search-box').show();
-
-
-    };
-
-    $scope.$on('post-added', function(event, args) {
-        $scope.getPosts();
-    });
-
-
-
-
-}]);
 app.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
@@ -264,6 +79,193 @@ app.service( 'PostService', ['$http', '$q', function( $http, $q )
         };
         return PostService;
     }] );
+app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function ( PostService, $scope, Upload ) {
+
+    $scope.postContent = null;
+    $scope.userid = null;
+    $scope.posts = [];
+    $scope.post = {
+        content: '',
+        location: '',
+        latitude: '',
+        longitude: ''
+    };
+
+    $scope.searchBox = null;
+    
+    $scope.current_page = 1;
+    $scope.total = 0;
+    $scope.last_page = undefined;
+    $scope.next_page = 1;
+    $scope.per_page = 5;
+    $scope.loading = false;
+
+    this.$onInit = function () {
+        var input = document.getElementById('search-box');
+        $scope.searchBox = new google.maps.places.SearchBox(input);
+        $scope.userid = this.userid;
+        $scope.getPosts();
+
+        $scope.searchBox.addListener('places_changed', $scope.setLocation);
+
+
+    };
+
+    $scope.setLocation = function () {
+        var places =  $scope.searchBox.getPlaces();
+        console.log(places);
+        $scope.post.location = places[0].formatted_address;
+        $scope.post.latitude = places[0].geometry.location.lat();
+        $scope.post.longitude = places[0].geometry.location.lng();
+    };
+    
+    $(window).scroll(function() {
+        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
+            if($scope.current_page != $scope.last_page){
+                $scope.getPosts();
+            }
+        }
+    });
+
+
+    $scope.getPosts = function ( update ) {
+        $scope.loading = true;
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.userid  ).then(function ( response ) { console.log(response);
+            if( response.current_page <= response.last_page ){
+
+                if( update ){
+                    $scope.posts = response.data
+                }else{
+                    response.data.forEach(function (post) {
+                        $scope.posts.push( post );
+                    });
+                }
+
+                $scope.next_page = response.current_page + 1;
+                $scope.per_page = response.per_page;
+                $scope.current_page = response.current_page;
+                $scope.last_page = response.last_page;
+                $scope.total = response.total;
+            }
+            $scope.loading = false;
+        });
+    };
+
+    $scope.savePost = function() {
+        if( $scope.postContent != null )
+        {
+
+            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude )
+                .then( function( response )
+            {
+                if( $scope.files != undefined )
+                {
+                    var id = response;
+                    Upload.upload({
+                        url: '/api/posts/save-file',
+                        data: { files: $scope.files, id: id }}
+                    )
+                        .success(function (response) {
+                            $scope.files = null;
+                        });
+                }
+
+
+
+            });
+        }
+        setTimeout(function () {
+            $scope.postContent = null;
+            $scope.post.location = '';
+            $scope.post.latitude = '';
+            $scope.post.longitude = '';
+            $('#search-box').val('');
+            $scope.$broadcast('post-added');
+        }, 1500);
+
+    };
+
+    $scope.details = {};
+
+    $scope.addLocation = function () {
+        $('#search-box').show();
+
+
+    };
+
+    $scope.$on('post-added', function(event, args) {
+        $scope.getPosts( true );
+    });
+
+
+
+
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'UserController',
+    bindings: {
+        id: '<'
+    }
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 user.component( 'invitation', {
     templateUrl: '/api/view/modules.users.api.invitation',
     controller: 'InvitationController',

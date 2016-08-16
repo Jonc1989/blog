@@ -10,14 +10,13 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
         longitude: ''
     };
 
-
-    //$scope.map = { center: { latitude: 56.526248, longitude: 27.357412599999975 }, zoom: 15 };
     $scope.searchBox = null;
     
     $scope.current_page = 1;
+    $scope.total = 0;
     $scope.last_page = undefined;
     $scope.next_page = 1;
-    $scope.per_page = 2;
+    $scope.per_page = 5;
     $scope.loading = false;
 
     this.$onInit = function () {
@@ -47,31 +46,25 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
         }
     });
 
-    // $scope.findCoordinates = function (address) {
-    //     var geocoder = new google.maps.Geocoder();
-    //     geocoder.geocode({
-    //         "address": address
-    //     }, function(results) {
-    //         console.log(address);
-    //         $scope.map.center.latitude = results[0].geometry.location.lat()
-    //         $scope.map.center.longitude = results[0].geometry.location.lng()
-    //     });
-    // };
 
-
-    $scope.getPosts = function () {
+    $scope.getPosts = function ( update ) {
         $scope.loading = true;
-        PostService.getPosts( $scope.per_page, $scope.next_page, $scope.userid  ).then(function ( response ) {
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.userid  ).then(function ( response ) { console.log(response);
             if( response.current_page <= response.last_page ){
 
-                response.data.forEach(function (post) {
-                    $scope.posts.push( post );
-                });
+                if( update ){
+                    $scope.posts = response.data
+                }else{
+                    response.data.forEach(function (post) {
+                        $scope.posts.push( post );
+                    });
+                }
 
                 $scope.next_page = response.current_page + 1;
                 $scope.per_page = response.per_page;
                 $scope.current_page = response.current_page;
                 $scope.last_page = response.last_page;
+                $scope.total = response.total;
             }
             $scope.loading = false;
         });
@@ -96,10 +89,19 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
                         });
                 }
 
-                $scope.$broadcast('post-added');
-                $scope.postContent = null;
+
+
             });
         }
+        setTimeout(function () {
+            $scope.postContent = null;
+            $scope.post.location = '';
+            $scope.post.latitude = '';
+            $scope.post.longitude = '';
+            $('#search-box').val('');
+            $scope.$broadcast('post-added');
+        }, 1500);
+
     };
 
     $scope.details = {};
@@ -111,7 +113,7 @@ app.controller( 'PostController', [ 'PostService', '$scope', 'Upload', function 
     };
 
     $scope.$on('post-added', function(event, args) {
-        $scope.getPosts();
+        $scope.getPosts( true );
     });
 
 

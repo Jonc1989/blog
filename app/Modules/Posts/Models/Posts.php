@@ -25,7 +25,7 @@ class Posts extends Model {
 
     public function location()
     {
-        return $this->belongsTo('App\Modules\Common\Models\Address', 'location_id');
+        return $this->belongsTo('App\Modules\Common\Models\Location', 'location_id');
     }
 
 }
