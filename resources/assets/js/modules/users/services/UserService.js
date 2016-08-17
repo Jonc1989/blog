@@ -59,7 +59,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             changeStatus: function( id, status )
+             invite: function( id, status )
              {
                  var deferred = $q.defer();
                  var data = {

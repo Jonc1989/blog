@@ -1,6 +1,3 @@
-/**
- * Created by Janis on 06.08.2016..
- */
 var app = angular.module( 'app', [
     //'ngComponentRouter',
     'ui.router',
@@ -22,6 +19,14 @@ var app = angular.module( 'app', [
         });
     }]
 );
+// var express = require('express')();
+// var server = require('http').Server(express);
+//
+// var io = require('socket.io')(server);
+//
+// server.listen(8000, function () {
+//     console.log('socket.io connected!')
+// });
 
 var home = angular.module('home', [
 
@@ -64,29 +69,6 @@ var user = angular.module('users', [ function () {
             });
     });
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -175,6 +157,29 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 post.component( 'posts', {
     templateUrl: '/api/view/modules.posts.api.posts',
     controller: 'PostController',
@@ -526,7 +531,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             changeStatus: function( id, status )
+             invite: function( id, status )
              {
                  var deferred = $q.defer();
                  var data = {
