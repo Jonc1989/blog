@@ -28,7 +28,7 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             getPosts:  function( perPage, current, id )
             {
-                var deferred = $q.defer(); console.log(id);
+                var deferred = $q.defer();
                 $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
                     .success( function( response )
                     {

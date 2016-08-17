@@ -9,6 +9,7 @@ var app = angular.module( 'app', [
     'home',
     'posts',
     'users',
+    'messages'
     // function () {
     //     app.value("$routerRootComponent", "userInfo");
     // }

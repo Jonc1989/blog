@@ -48,7 +48,7 @@
             <div ng-bind="post.content"></div>
         </div>
 
-        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12" id="map_canvas">
+        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12">
             <ui-gmap-google-map  center="{ latitude: post.location.latitude, longitude: post.location.longitude }" zoom="8"></ui-gmap-google-map>
         </div>
     </div>

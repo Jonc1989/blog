@@ -9,6 +9,7 @@ var app = angular.module( 'app', [
     'home',
     'posts',
     'users',
+    'messages'
     // function () {
     //     app.value("$routerRootComponent", "userInfo");
     // }
@@ -23,6 +24,10 @@ var app = angular.module( 'app', [
 );
 
 var home = angular.module('home', [
+
+]);
+
+var messages = angular.module('messages', [
 
 ]);
 
@@ -69,6 +74,10 @@ app.component( 'info', {
         id: '<'
     }
 })
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
 
 app.component( 'online', {
     templateUrl: '/api/view/modules.home.api.online',
@@ -90,11 +99,35 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
         var details = [ 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
-            console.log(response);
             $scope.user = response;
         });
     };
     
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+            console.log(response);
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
 }]);
 home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.users = [];
@@ -303,7 +336,7 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             getPosts:  function( perPage, current, id )
             {
-                var deferred = $q.defer(); console.log(id);
+                var deferred = $q.defer();
                 $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
                     .success( function( response )
                     {
@@ -369,38 +402,49 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
     $scope.myId = null;
     $scope.friendId = null;
     $scope.friendStatus = null;
+    $scope.friendStatusText = null;
 
 
     this.$onInit = function () {
         $scope.friendId = this.friendid;
         $scope.myId = this.myid;
-        UserService.getStatus($scope.friendId).then( function ( response ) {
+        $scope.checkStatus();
+    };
 
+    $scope.checkStatus = function () {
+        UserService.getStatus($scope.friendId).then( function ( response ) {
             if(response.length == 0) {
-                $scope.friendStatus = 0; //nav draugi
+                $scope.friendStatus = 0; //nav draugi                       //action - uzaicināt
+                $scope.friendStatusText = 'Uzaicināt';
             }else if( response[0].user_id == $scope.myId ){
                 if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 1; //uzaicinājums nosūtīts
+                    $scope.friendStatus = 1; //uzaicinājums nosūtīts        //action - atcelt uzaicinājumu
+                    $scope.friendStatusText = 'Atcelt uzaicinājumu';
                 }else{
-                    $scope.friendStatus = 2; //uzaicinājums apstiprināts
+                    $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
                 }
             }else if( response[0].friend_id == $scope.friendId ){
                 if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 3; //uzaicinājums saņemts
+                    $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
+                    $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
                 }else{
-                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju
+                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
                 }
             }
-            //console.log( $scope.friendStatus );
-
         });
     };
 
-    $scope.invite = function () {
-        UserService.invite( $scope.friendId ).then( function( response )  {        });
+    $scope.changeFriendshipStatus = function () {
+        UserService.changeStatus( $scope.friendId, $scope.friendStatus ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
     };
 
-
+    $scope.$on('friend-status-changed', function(event, args) {
+        $scope.checkStatus();
+    });
 
 }]);
 user.controller( 'UserController', [ 'UserService', '$scope', '$rootScope', function ( UserService, $scope, $rootScope ) {
@@ -469,7 +513,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             getFriends:  function( id )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user/friends/' + id )
+                $http.get( '/api/friends/' + id )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -482,10 +526,14 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             invite: function(id)
+             changeStatus: function( id, status )
              {
                  var deferred = $q.defer();
-                 $http.get( '/api/users/add/' + id )
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
                      .success( function( response )
                      {
                          deferred.resolve( response );
@@ -501,7 +549,23 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             getStatus: function( id )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user/status/' + id )
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -517,58 +581,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             invitations: function()
             {
                 var deferred = $q.defer();
-                $http.get( '/api/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            acceptInvitation: function(userId, invitorId)
-            {
-                var params = {
-                    user: userId,
-                    invitor: invitorId
-                };
-                var deferred = $q.defer();
-                $http.post( '/api/accept-invite/', params )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            cancel: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/user/cancel-friendship/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
+                $http.get( '/api/friends/invitations' )
                     .success( function( response )
                     {
                         deferred.resolve( response );

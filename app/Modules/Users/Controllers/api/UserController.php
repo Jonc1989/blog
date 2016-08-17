@@ -3,11 +3,9 @@
 namespace App\Modules\Users\Controllers\api;
 
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
-use App\Modules\Friends\Repositories\FriendsRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
 class UserController extends ApiController
 {
@@ -16,10 +14,10 @@ class UserController extends ApiController
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user, FriendsRepositoryInterface $friends )
+    public function __construct( UsersRepositoryInterface $user )
     {
         $this->user = $user;
-        $this->friends = $friends;
+
     }
 
     /**
@@ -50,7 +48,7 @@ class UserController extends ApiController
      */
     public function store(Request $request)
     {
-        //
+        //        
     }
 
     /**
@@ -114,29 +112,5 @@ class UserController extends ApiController
     {
         count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
         return $this->user->onlineUsers( $fields );
-    }
-
-    /**
-     * @param $id
-     */
-    public function status( $id )
-    {
-        return $this->friends->friendshipStatus( $id );
-    }
-
-    /**
-     * @param $id
-     */
-    public function add($id)
-    {
-        $this->friends->add($id);
-    }
-
-    /**
-     * @param $id
-     */
-    public function friends( $id )
-    {
-        return $this->respond( $this->friends->userFriends( $id ) );
     }
 }

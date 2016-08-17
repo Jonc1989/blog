@@ -6,15 +6,12 @@ interface FriendsRepositoryInterface
 {
     public function __construct(Friends $friends);
 
-    public function add($id);
+    public function add($id, $status );
 
     public function friendshipStatus( $id );
 
     public function userFriends( $id );
 
-    public function invitations($id);
-
-    public function accept( $user, $invitor);
-
-    public function cancelFriendship( $id );
+    public function invitations();
+    
 }

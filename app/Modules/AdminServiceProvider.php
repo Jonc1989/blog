@@ -25,7 +25,8 @@ class AdminServiceProvider extends ServiceProvider
             'Messages',
             'Galleries',
             'Friends',
-            'Posts'
+            'Posts',
+            'Common'
         ];
 
         foreach ( $modules as $module )

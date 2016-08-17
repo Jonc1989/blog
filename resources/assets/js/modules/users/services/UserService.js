@@ -46,7 +46,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             getFriends:  function( id )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user/friends/' + id )
+                $http.get( '/api/friends/' + id )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -59,10 +59,14 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             invite: function(id)
+             changeStatus: function( id, status )
              {
                  var deferred = $q.defer();
-                 $http.get( '/api/users/add/' + id )
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
                      .success( function( response )
                      {
                          deferred.resolve( response );
@@ -78,7 +82,23 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             getStatus: function( id )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user/status/' + id )
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -94,58 +114,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
             invitations: function()
             {
                 var deferred = $q.defer();
-                $http.get( '/api/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            acceptInvitation: function(userId, invitorId)
-            {
-                var params = {
-                    user: userId,
-                    invitor: invitorId
-                };
-                var deferred = $q.defer();
-                $http.post( '/api/accept-invite/', params )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            cancel: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/user/cancel-friendship/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
+                $http.get( '/api/friends/invitations' )
                     .success( function( response )
                     {
                         deferred.resolve( response );

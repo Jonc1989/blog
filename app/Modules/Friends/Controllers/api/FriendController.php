@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Modules\Friends\Controllers;
+namespace App\Modules\Friends\Controllers\api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests;
 use Illuminate\Http\Request;
-
-class FriendController extends Controller
+use App\Modules\Friends\Repositories\FriendsRepositoryInterface;
+use Illuminate\Support\Facades\Input;
+class FriendController extends ApiController
 {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct( FriendsRepositoryInterface $friends )
     {
-        $this->middleware('guest');
+        //$this->middleware('guest');
+        $this->friends = $friends;
     }
 
     /**
@@ -46,7 +48,13 @@ class FriendController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //if( Input::get( 'id' ) && Input::get( 'status' ) ){
+            $id = Input::get( 'id' );
+            $status = Input::get( 'status' );
+            return $this->respond( $this->friends->add($id, $status) );
+        //}else{
+        //    return $this->respondError();
+        //}
     }
 
     /**
@@ -92,5 +100,30 @@ class FriendController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * @param $id
+     */
+    public function status( $id )
+    {
+        return $this->friends->friendshipStatus( $id );
+    }
+
+    /**
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function friends( $id )
+    {
+        return $this->respond( $this->friends->userFriends( $id ) );
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function invitations()
+    {
+        return $this->respond( $this->friends->invitations() );
     }
 }

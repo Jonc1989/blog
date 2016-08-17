@@ -22,7 +22,7 @@ class SessionTimeout
      */
     public function handle($request, Closure $next)
     {
-        $isLoggedIn = $request->path() != 'dashboard/logout';
+        $isLoggedIn = $request->path() != 'logout';
         if(! session('lastActivityTime'))
             $this->session->put('lastActivityTime', time());
         elseif(time() - $this->session->get('lastActivityTime') > $this->timeout){
@@ -32,7 +32,7 @@ class SessionTimeout
             //auth()->logout();
             $this->event->fire( 'user.logout', [ \Auth::user() ] );
             //return message('You had not activity in '.$this->timeout/60 .' minutes ago.', 'warning', 'login')->withInput(compact('email'))->withCookie($cookie);
-
+            return redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
             //return redirect('/login')->with('message', 'You had not activity in '.$this->timeout/60 .' minutes ago.');
         }
         $isLoggedIn ? $this->session->put('lastActivityTime', time()) : $this->session->forget('lastActivityTime');

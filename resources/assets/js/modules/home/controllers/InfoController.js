@@ -10,7 +10,6 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
         var details = [ 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
-            console.log(response);
             $scope.user = response;
         });
     };

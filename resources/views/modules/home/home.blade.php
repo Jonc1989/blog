@@ -16,12 +16,24 @@
         </div>
         <div class="col-md-9 col-md-offset-0">
             <div class="col-md-4">
-                <div class="panel panel-default">
-                    <div class="panel-heading">Sīka info</div>
-                    <div class="panel-body">
-                        Murr
+
+
+                <div class="panel-group" id="accordion">
+                    <invitations></invitations>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#comments">Komentāri</a>
+                            </h4>
+                        </div>
+                        <div id="comments" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <p>....</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
             <div class="col-md-8">
                 <div class="panel panel-default">
