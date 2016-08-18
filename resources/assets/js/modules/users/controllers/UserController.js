@@ -1,18 +1,34 @@
-user.controller( 'UserController', [ 'UserService', '$scope', '$rootScope', function ( UserService, $scope, $rootScope ) {
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
+
     $scope.user = null;
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
 
     $scope.init = function (id) {
         $rootScope.userId = id;
-        this.id = id;
-        var details = [ 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
+
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( id, details ).then( function( response )
         {
             $scope.user = response;
         });
     };
 
-    this.$onInit = function (id) {
-       
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.user.id;
+
+        MessageService.send($scope.message).then(function(response){
+            $scope.messageBody = "";
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
     
 }]);

@@ -17,5 +17,8 @@ class MessagesServiceProvider extends ModuleServiceProvider
     public function register()
     {
         $this->bootModule(__DIR__, 'messages');
+
+        $this->app->bind('App\Modules\Messages\Repositories\MessagesRepositoryInterface',
+            'App\Modules\Messages\Repositories\MessagesRepository');
     }
 }

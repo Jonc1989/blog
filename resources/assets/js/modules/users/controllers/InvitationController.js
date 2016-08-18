@@ -4,6 +4,7 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
     $scope.friendId = null;
     $scope.friendStatus = null;
     $scope.friendStatusText = null;
+    $scope.cancelText = null;
 
 
     this.$onInit = function () {
@@ -25,9 +26,10 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
                     $scope.friendStatusText = 'Atcelt draudzību';
                 }
-            }else if( response[0].friend_id == $scope.friendId ){
+            }else /*if( response[0].friend_id == $scope.friendId )*/{
                 if( response[0].friendship == 0 ){
                     $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
+                    $scope.cancelText = 'Atcelt uzaicinājumu';
                     $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
                 }else{
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
@@ -42,6 +44,13 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
             $scope.$broadcast('friend-status-changed');
         });
     };
+
+    $scope.cancelFriendRequest = function () {
+        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
 
     $scope.$on('friend-status-changed', function(event, args) {
         $scope.checkStatus();

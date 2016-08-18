@@ -19,24 +19,38 @@ var app = angular.module( 'app', [
         });
     }]
 );
-// var express = require('express')();
-// var server = require('http').Server(express);
-//
-// var io = require('socket.io')(server);
-//
-// server.listen(8000, function () {
-//     console.log('socket.io connected!')
-// });
-
-var home = angular.module('home', [
-
-]);
 
 var messages = angular.module('messages', [
+    
+])
+    .config(function($stateProvider, $urlRouterProvider) {
+
+        $urlRouterProvider.otherwise("/");
+
+        // $stateProvider
+        //     .state('messages', {
+        //         url: "/:id",
+        //         templateUrl: "/api/view/modules.messages.api.content",
+        //         controller: "PostController",
+        //         params: {
+        //             id: null
+        //         }
+        //     })
+        //     .state('friends', {
+        //         url: "/friends",
+        //         templateUrl: "/api/view/modules.users.api.friends",
+        //         controller: 'FriendsController',
+        //         params: {
+        //             id: null
+        //         }
+        //     });
+    });
+
+var post = angular.module('posts', [
 
 ]);
 
-var post = angular.module('posts', [
+var home = angular.module('home', [
 
 ]);
 
@@ -69,117 +83,59 @@ var user = angular.module('users', [ function () {
             });
     });
 
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
+messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
 
-    // $scope.init = function (id) {
-    //     this.id = id;
-    //    
-    // };
+    $scope.friendId = null;
+    $scope.messages = {};
+    $scope.users = {};
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
 
     this.$onInit = function () {
-        var details = [ 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-            console.log(response);
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
+        $scope.messangers();
     };
 
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.users = [];
-    
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.onlineUsers( details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
+    $scope.messangers = function()
     {
-        if( $scope.searchKey.length > 2)
+        MessageService.getMessengers().then( function( response )
         {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
+            $scope.users = response.data;
+            $scope.friendId = $scope.users[0].id;
+            $scope.getMessagesFromUser( $scope.friendId );
+            console.log($scope.users);
+        });
+    };
+
+    $scope.getMessagesFromUser = function( id )
+    {
+        $scope.friendId = id;
+        MessageService.getMessages( id ).then( function( response )
+        {
+            $scope.messages = response;
+
+            console.log( $scope.messages );
+        });
+    };
+
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.friendId;
+
+        MessageService.send($scope.message).then(function(response){
+            $scope.messageBody = "";
+            $scope.getMessagesFromUser( $scope.friendId );
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
     
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 post.component( 'posts', {
     templateUrl: '/api/view/modules.posts.api.posts',
     controller: 'PostController',
@@ -187,6 +143,105 @@ post.component( 'posts', {
         userid: '<'
     }
 })
+messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
+    {
+        var MessageService = {
+
+            send: function(message)
+            {
+                var deferred = $q.defer();
+                $http.post( '/api/messages', message )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response.data );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            getMessengers:  function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messengers' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getMessages: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            loadMore: function( id, currentPage )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id, { params: { currentPage: currentPage } } )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            }
+        };
+        return MessageService;
+    }] );
 post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', function ( PostService, $scope, Upload, $stateParams, $rootScope ) {
 
     $scope.postContent = null;
@@ -358,6 +413,117 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
         };
         return PostService;
     }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+    // $scope.init = function (id) {
+    //     this.id = id;
+    //    
+    // };
+
+    this.$onInit = function () {
+        var details = [ 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+            console.log(response);
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
 user.component( 'friends', {
     templateUrl: '/api/view/modules.users.api.friends',
     controller: 'FriendsController',
@@ -408,6 +574,7 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
     $scope.friendId = null;
     $scope.friendStatus = null;
     $scope.friendStatusText = null;
+    $scope.cancelText = null;
 
 
     this.$onInit = function () {
@@ -429,9 +596,10 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
                     $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
                     $scope.friendStatusText = 'Atcelt draudzību';
                 }
-            }else if( response[0].friend_id == $scope.friendId ){
+            }else /*if( response[0].friend_id == $scope.friendId )*/{
                 if( response[0].friendship == 0 ){
                     $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
+                    $scope.cancelText = 'Atcelt uzaicinājumu';
                     $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
                 }else{
                     $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
@@ -447,26 +615,49 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
         });
     };
 
+    $scope.cancelFriendRequest = function () {
+        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
+
     $scope.$on('friend-status-changed', function(event, args) {
         $scope.checkStatus();
     });
 
 }]);
-user.controller( 'UserController', [ 'UserService', '$scope', '$rootScope', function ( UserService, $scope, $rootScope ) {
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
+
     $scope.user = null;
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
 
     $scope.init = function (id) {
         $rootScope.userId = id;
-        this.id = id;
-        var details = [ 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
+
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( id, details ).then( function( response )
         {
             $scope.user = response;
         });
     };
 
-    this.$onInit = function (id) {
-       
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.user.id;
+
+        MessageService.send($scope.message).then(function(response){
+            $scope.messageBody = "";
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
     
 }]);
@@ -531,7 +722,7 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-             invite: function( id, status )
+            changeStatus: function( id, status )
              {
                  var deferred = $q.defer();
                  var data = {

@@ -12,12 +12,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get( 'online', 'App\Modules\Users\Controllers\api\UserController@online' );
 
-//        Route::get( 'user/status/{id}', 'App\Modules\Users\Controllers\api\UserController@status' );
-//
-//        Route::get( 'user/friends/{id}', 'App\Modules\Users\Controllers\api\UserController@friends' );
-        
-        //Route::get( 'users/add/{id}', 'App\Modules\Users\Controllers\api\UserController@add' );
-
         Route::get( 'users/search/{key}', 'App\Modules\Users\Controllers\api\UserController@search' );
 
     });

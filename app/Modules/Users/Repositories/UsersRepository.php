@@ -19,9 +19,34 @@ class UsersRepository extends Repository implements UsersRepositoryInterface
         //
     }
 
-    public function searchBy( $attribute1, $attribute2, $value ) {
-        return $this->model->where( $attribute1, 'like', '%' . $value . '%')
-            ->orWhere( $attribute2, 'like', '%' . $value . '%')->get();
+    public function searchBy( $attribute1, $attribute2, $value )
+    {
+        $package = explode( ' ', $value );
+        $count = count($package);
+        foreach ( $package as $key ){
+            return $this->model
+                ->where( $attribute1, 'like', '%' . $key . '%')
+                ->orWhere( $attribute2, 'like', '%' . $key . '%')->get();
+        }
+//        if( $count == 1 ){
+//            return $this->model
+//                ->where( $attribute1, 'like', '%' . $value . '%')
+//                ->orWhere( $attribute2, 'like', '%' . $value . '%')->get();
+//        }else if( $count == 2 ){
+//            return $this->model
+//                ->where( $attribute1, 'like', '%' . $package[0] . '%')
+//                ->orWhere( $attribute2, 'like', '%' . $package[0] . '%')
+//                ->orWhere( $attribute1, 'like', '%' . $package[1] . '%')
+//                ->orWhere( $attribute2, 'like', '%' . $package[1] . '%')->get();
+//        }else{
+//            
+//        }
+
+
+
+
+
+
     }
 
     public function updateOnlineStats($id, $online)

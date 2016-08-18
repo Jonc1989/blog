@@ -16,16 +16,16 @@ class Messages extends Model {
      *
      * @var array
      */
-    protected $fillable = ['text', 'sender_id', 'reciver_id'];
+    protected $fillable = ['text', 'sender_id', 'receiver_id', 'readed', 'answered' ];
 
     public function senders()
     {
         return $this->belongsTo('App\Modules\Users\Models\User', 'sender_id');
     }
 
-    public function recivers()
+    public function receivers()
     {
-        return $this->belongsTo('App\Modules\Users\Models\User', 'reciver_id');
+        return $this->belongsTo('App\Modules\Users\Models\User', 'receiver_id');
     }
 
 }

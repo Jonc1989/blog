@@ -38,4 +38,7 @@ body {
 textarea {
   resize: none; }
 
+.clear-pads {
+  padding: 0px; }
+
 /*# sourceMappingURL=app.css.map */
