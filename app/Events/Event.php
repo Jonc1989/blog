@@ -1,16 +1,24 @@
 <?php
-
 namespace App\Events;
-use Illuminate\Database\Eloquent\Model;
-abstract class Event
+
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Queue\SerializesModels;
+abstract class Event implements ShouldBroadcast
 {
+    use SerializesModels;
+    
     public function __construct()
     {
         //
     }
-    
-    public function handle(Model $user, $remember)
+
+    /**
+     * Get the channels the event should be broadcast on.
+     *
+     * @return array
+     */
+    public function broadcastOn()
     {
-        //
+        return [];
     }
 }

@@ -8,7 +8,6 @@ home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( 
     $scope.getInvitations = function () {
         UserService.invitations().then( function( response )  {
             $scope.invitations = response;
-            console.log(response);
         });
     };
     

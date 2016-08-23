@@ -1,6 +1,7 @@
 <?php
 namespace App\Modules\Users\Events;
 
+use App\Events\Test;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Events\Login as User;
 use Illuminate\Auth\Events\Logout;
@@ -41,5 +42,10 @@ class OnlineStatusHandler
     public function logoutManualy( Logout $user )
     {
         $this->user_repository->updateOnlineStats( $user->user[ 'attributes' ][ 'id' ], 0 );
+    }
+
+    public function test( Test $test )
+    {
+        \Log::info($test);
     }
 }

@@ -3,6 +3,7 @@
 use App\Modules\Common\Models\Location;
 use App\Modules\Posts\Models\Posts;
 use App\Http\Repositories\Repository;
+use App\Modules\Posts\Events\PostAdded;
 class PostRepository extends Repository implements PostRepositoryInterface
 {
     public function __construct( Posts $posts )
@@ -41,6 +42,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
         
 
         $post->save();
+        event( new PostAdded('Ok'));
         return $post->id;
     }
 }

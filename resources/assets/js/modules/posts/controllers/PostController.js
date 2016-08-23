@@ -1,4 +1,5 @@
-post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', function ( PostService, $scope, Upload, $stateParams, $rootScope ) {
+post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', 'SocketFactory',
+    function ( PostService, $scope, Upload, $stateParams, $rootScope, SocketFactory ) {
 
     $scope.postContent = null;
     $scope.id = null;
@@ -9,7 +10,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
         latitude: '',
         longitude: ''
     };
-
+    $scope.details = {};
     $scope.searchBox = null;
     
     $scope.current_page = 1;
@@ -29,7 +30,9 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
         $scope.getPosts();
 
         $scope.searchBox.addListener('places_changed', $scope.setLocation);
-
+        SocketFactory.on('post-added', function (data) {
+            $scope.getPosts( true );
+        });
 
     };
 
@@ -49,7 +52,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     });
 
 
-    $scope.getPosts = function ( update ) {
+    $scope.getPosts = function ( update ) { console.log('Loading...');
         $scope.loading = true;
         PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
@@ -88,37 +91,44 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
                     )
                         .success(function (response) {
                             $scope.files = null;
+                            $scope.clearInputs();
                         });
+                }else{
+                    $scope.clearInputs()
                 }
 
 
 
             });
         }
-        setTimeout(function () {
-            $scope.postContent = null;
-            $scope.post.location = '';
-            $scope.post.latitude = '';
-            $scope.post.longitude = '';
-            $('#search-box').val('');
-            $scope.$broadcast('post-added');
-        }, 1500);
 
     };
 
-    $scope.details = {};
+
 
     $scope.addLocation = function () {
         $('#search-box').show();
-
-
     };
 
-    $scope.$on('post-added', function(event, args) {
-        $scope.getPosts( true );
+
+        
+    // $scope.$on('$destroy', function (event) {
+    //     SocketFactory.removeAllListeners();
+    // });
+
+    $scope.$on('refresh', function(event, args) {
+
     });
 
-
+    $scope.clearInputs = function () {
+        $scope.postContent = null;
+        $scope.post.location = '';
+        $scope.post.latitude = '';
+        $scope.post.longitude = '';
+        $('#search-box').val('');
+        //SocketFactory.emit('post-added');
+        $scope.$broadcast('refresh');
+    };
 
 
 }]);

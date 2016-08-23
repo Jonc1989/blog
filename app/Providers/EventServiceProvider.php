@@ -13,9 +13,16 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'App\Events\SomeEvent' => [
-            'App\Listeners\EventListener',
+        'App\Modules\Posts\Events\PostAdded' => [
+            'App\Modules\Posts\Listeners\PostAddedL',
         ],
+    ];
+
+    /**
+     * @var array
+     */
+    protected $subscribe = [
+        'App\Modules\Posts\Listeners\PostListener',
     ];
 
     /**
