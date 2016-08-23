@@ -18,9 +18,12 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
         MessageService.getMessengers().then( function( response )
         {
             $scope.users = response.data;
-            $scope.friendId = $scope.users[0].id;
-            $scope.getMessagesFromUser( $scope.friendId );
-            console.log($scope.users);
+
+            if( $scope.users.length ){
+                $scope.friendId = $scope.users[0].id;
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+
         });
     };
 

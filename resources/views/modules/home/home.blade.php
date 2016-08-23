@@ -35,7 +35,7 @@
                 </div>
 
             </div>
-            <div class="col-md-8">
+            <div class="col-md-8" style="margin-bottom: 50px;">
                 <div class="panel panel-default">
                     <div class="panel-heading">Wall</div>
                     <div class="panel-body">
