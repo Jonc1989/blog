@@ -48,8 +48,8 @@
             <div ng-bind="post.content"></div>
         </div>
 
-        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12">
-            <ui-gmap-google-map  center="{ latitude: post.location.latitude, longitude: post.location.longitude }" zoom="8"></ui-gmap-google-map>
+        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12" id="map_wrap_{{post.id}}">
+            <map ng-attr-id="{{ post.id }}" ng-attr-latitude="{{ post.location.latitude }}" ng-attr-longitude="{{ post.location.longitude }}"></map>
         </div>
     </div>
     <div class="loader-wrap" style="position: relative" ng-class="{ hidden : !loading}">Loading</div>

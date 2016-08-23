@@ -23,7 +23,6 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
     this.$onInit = function () {
-
         $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
         var input = document.getElementById('search-box');
         $scope.searchBox = new google.maps.places.SearchBox(input);
@@ -33,7 +32,9 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
         SocketFactory.on('post-added', function (data) {
             $scope.getPosts( true );
         });
-
+        $scope.$on('$destroy', function (event) {
+            SocketFactory.removeAllListeners();
+        });
     };
 
     $scope.setLocation = function () {
@@ -52,7 +53,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     });
 
 
-    $scope.getPosts = function ( update ) { console.log('Loading...');
+    $scope.getPosts = function ( update ) {
         $scope.loading = true;
         PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
@@ -112,9 +113,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
         
-    // $scope.$on('$destroy', function (event) {
-    //     SocketFactory.removeAllListeners();
-    // });
+
 
     $scope.$on('refresh', function(event, args) {
 

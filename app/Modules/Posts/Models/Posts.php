@@ -11,11 +11,21 @@ class Posts extends Model {
      *
      * @var array
      */
-    protected $fillable = [ 'name', 'content', 'user_id', 'post_type', 'content_id', 'location_id' ];
+    protected $fillable = [ 'name', 'content', 'sender_id', 'receiver_id', 'post_type', 'content_id', 'location_id' ];
 
     public function user()
     {
         return $this->belongsTo('App\Modules\Users\Models\User', 'user_id');
+    }
+
+    public function senders()
+    {
+        return $this->belongsTo('App\Modules\Users\Models\User', 'sender_id');
+    }
+
+    public function receivers()
+    {
+        return $this->belongsTo('App\Modules\Users\Models\User', 'receiver_id');
     }
 
     public function files()

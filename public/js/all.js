@@ -1,7 +1,7 @@
 var app = angular.module( 'app', [
     //'ngComponentRouter',
     'ui.router',
-    'uiGmapgoogle-maps',
+    //'uiGmapgoogle-maps',
     'ngFileUpload',
     'home',
     'posts',
@@ -11,14 +11,15 @@ var app = angular.module( 'app', [
     //     app.value("$routerRootComponent", "userInfo");
     // }
 
-] ).config(
-    ['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
-        GoogleMapApiProviders.configure({
-            china: true,
-            libraries: 'weather,geometry,visualization'
-        });
-    }]
-);
+] )
+//     .config(
+//     ['uiGmapGoogleMapApiProvider', function(GoogleMapApiProviders) {
+//         GoogleMapApiProviders.configure({
+//             china: true,
+//             libraries: 'weather,geometry,visualization'
+//         });
+//     }]
+// );
 
 
 var home = angular.module('home', [
@@ -381,7 +382,6 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
     this.$onInit = function () {
-
         $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
         var input = document.getElementById('search-box');
         $scope.searchBox = new google.maps.places.SearchBox(input);
@@ -410,7 +410,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     });
 
 
-    $scope.getPosts = function ( update ) { console.log('Loading...');
+    $scope.getPosts = function ( update ) {
         $scope.loading = true;
         PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
@@ -650,7 +650,7 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
     };
 
     $scope.init = function (id) {
-        $rootScope.userId = id;
+        $rootScope.userId = id; 
 
         var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( id, details ).then( function( response )
@@ -837,5 +837,18 @@ app.factory('SocketFactory', function ($rootScope) {
             });
         }
     };
+});
+app.directive('map', function () {
+    return {
+        link: function(scope, elem, attrs) {
+            var div= $('<div/>', { id: 'map_' + attrs.id });
+            $(elem).append( div );
+            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
+                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
+                zoom: 13,
+                mapTypeId: 'roadmap'
+            });
+        }
+    }
 });
 //# sourceMappingURL=all.js.map

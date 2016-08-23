@@ -17,7 +17,8 @@ elixir(function(mix) {
             '*.js',
             'modules/**/*.js',
             'modules/**/**/*.js',
-            'services/*.js'
+            'services/*.js',
+            'directives/*.js'
         ])
         .scripts([
             //'../../../node_modules/bootstrap-sass/assets/javascripts/bootstrap.min.js',
