@@ -1,5 +1,7 @@
 <?php namespace App\Modules\Friends;
 
+use App\Modules\Friends\Models\Friends;
+use App\Modules\Friends\Listeners\FriendObserver;
 use App\Providers\ModuleServiceProvider;
 
 /**
@@ -9,6 +11,12 @@ use App\Providers\ModuleServiceProvider;
  */
 class FriendsServiceProvider extends ModuleServiceProvider
 {
+
+    public function boot()
+    {
+        Friends::observe(FriendObserver::class);
+    }
+
     /**
      * Register the service provider.
      *

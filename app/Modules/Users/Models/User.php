@@ -6,6 +6,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::updating( function( $user ){
+            \Log::info( $user );
+        });
+    }
     /**
      * The attributes that are mass assignable.
      *

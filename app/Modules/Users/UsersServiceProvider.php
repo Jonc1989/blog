@@ -1,5 +1,7 @@
 <?php namespace App\Modules\Users;
 
+use App\Modules\Users\Models\User;
+use App\Modules\Users\Listeners\UserObserver;
 use App\Providers\ModuleServiceProvider;
 
 /**
@@ -9,6 +11,16 @@ use App\Providers\ModuleServiceProvider;
  */
 class UsersServiceProvider extends ModuleServiceProvider
 {
+
+    /**
+     *
+     */
+    public function boot()
+    {
+        User::observe(UserObserver::class);
+    }
+
+
     /**
      * Register the service provider.
      *

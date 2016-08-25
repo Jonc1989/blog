@@ -61,7 +61,7 @@ class UserController extends ApiController
     {
 
         count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
-        $id == \Auth::user()->id ? $fields = Input::all() : $fields = ['*'];
+        //$id == \Auth::user()->id ? $fields = Input::all() : $fields = ['*'];
         return $this->user->find( $id, $fields );
     }
 
@@ -85,7 +85,7 @@ class UserController extends ApiController
      */
     public function update(Request $request, $id)
     {
-        //
+        return $this->respondUpdated( null, $this->user->update( $request->get('params'), $id ));
     }
 
     /**

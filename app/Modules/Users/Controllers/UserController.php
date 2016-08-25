@@ -73,7 +73,7 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        return view('modules.users.edit')->with( 'id', $id );
     }
 
     /**

@@ -23,6 +23,24 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
             },
 
+            updateUser: function ( id, user ) {
+                var deferred = $q.defer();
+                $http.put( '/api/users/' + id,
+                    {
+                        params: user
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+            },
+
             onlineUsers:  function( details )
             {
                 var deferred = $q.defer();
