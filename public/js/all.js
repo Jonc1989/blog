@@ -72,29 +72,6 @@ var user = angular.module('users', [ function () {
             });
     });
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -182,6 +159,29 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
 
     $scope.friendId = null;
@@ -438,7 +438,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
         if( $scope.postContent != null )
         {
 
-            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude )
+            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude, $scope.authId, $scope.userId  )
                 .then( function( response )
             {
                 if( $scope.files != undefined )
@@ -493,14 +493,16 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 
-                save:  function(post, location, lat, lng)
+                save:  function(post, location, lat, lng, authId, userId )
                 {
                     if( post != '' ){
                         var data = {
                             post: post,
                             location: location,
                             latitude: lat,
-                            longitude: lng
+                            longitude: lng,
+                            authId: authId,
+                            userId: userId
                         };
                         var deferred = $q.defer();
                         $http.post( '/api/posts', data )
@@ -564,6 +566,137 @@ app.component( 'userInfo', {
         id: '<'
     }
 })
+user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
+    function ( UserService, $scope, $stateParams, $rootScope ) {
+    $scope.users = [];
+
+    $scope.id = null;
+
+    this.$onInit = function () {
+        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
+        UserService.getFriends( $scope.id ).then( function( response )
+        {
+            console.log(response);
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.myId = null;
+    $scope.friendId = null;
+    $scope.friendStatus = null;
+    $scope.friendStatusText = null;
+    $scope.cancelText = null;
+
+
+    this.$onInit = function () {
+        $scope.friendId = this.friendid;
+        $scope.myId = this.myid;
+        $scope.checkStatus();
+    };
+
+    $scope.checkStatus = function () {
+        UserService.getStatus($scope.friendId).then( function ( response ) {
+            if(response.length == 0) {
+                $scope.friendStatus = 0; //nav draugi                       //action - uzaicināt
+                $scope.friendStatusText = 'Uzaicināt';
+            }else if( response[0].user_id == $scope.myId ){
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 1; //uzaicinājums nosūtīts        //action - atcelt uzaicinājumu
+                    $scope.friendStatusText = 'Atcelt uzaicinājumu';
+                }else{
+                    $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
+                }
+            }else /*if( response[0].friend_id == $scope.friendId )*/{
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
+                    $scope.cancelText = 'Atcelt uzaicinājumu';
+                    $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
+                }else{
+                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
+                }
+            }
+        });
+    };
+
+    $scope.changeFriendshipStatus = function () {
+        UserService.changeStatus( $scope.friendId, $scope.friendStatus ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
+    $scope.cancelFriendRequest = function () {
+        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
+
+    $scope.$on('friend-status-changed', function(event, args) {
+        $scope.checkStatus();
+    });
+
+}]);
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
+
+    $scope.user = null;
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
+
+    $scope.init = function (authId, userId) {
+        $rootScope.authId = authId;
+        $rootScope.userId = userId;
+
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( userId, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.user.id;
+
+        MessageService.send($scope.message).then(function(response){
+            $scope.messageBody = "";
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
+    };
+    
+}]);
+user.controller( 'UserEditController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.user = null;
+    $scope.disabled = true;
+
+    $scope.init = function (id) {
+
+        UserService.getUser( id ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+
+    $scope.saveUser = function ( ) {
+        UserService.updateUser( $scope.user.id, $scope.user ).then( function( response )
+        {
+           console.log(response);
+        });
+    }
+
+}]);
 user.service( 'UserService', ['$http', '$q', function( $http, $q )
     {
 
@@ -714,137 +847,6 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
         };
         return UserService;
     }] );
-user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
-    function ( UserService, $scope, $stateParams, $rootScope ) {
-    $scope.users = [];
-
-    $scope.id = null;
-
-    this.$onInit = function () {
-        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
-        UserService.getFriends( $scope.id ).then( function( response )
-        {
-            console.log(response);
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.myId = null;
-    $scope.friendId = null;
-    $scope.friendStatus = null;
-    $scope.friendStatusText = null;
-    $scope.cancelText = null;
-
-
-    this.$onInit = function () {
-        $scope.friendId = this.friendid;
-        $scope.myId = this.myid;
-        $scope.checkStatus();
-    };
-
-    $scope.checkStatus = function () {
-        UserService.getStatus($scope.friendId).then( function ( response ) {
-            if(response.length == 0) {
-                $scope.friendStatus = 0; //nav draugi                       //action - uzaicināt
-                $scope.friendStatusText = 'Uzaicināt';
-            }else if( response[0].user_id == $scope.myId ){
-                if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 1; //uzaicinājums nosūtīts        //action - atcelt uzaicinājumu
-                    $scope.friendStatusText = 'Atcelt uzaicinājumu';
-                }else{
-                    $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
-                    $scope.friendStatusText = 'Atcelt draudzību';
-                }
-            }else /*if( response[0].friend_id == $scope.friendId )*/{
-                if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
-                    $scope.cancelText = 'Atcelt uzaicinājumu';
-                    $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
-                }else{
-                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
-                    $scope.friendStatusText = 'Atcelt draudzību';
-                }
-            }
-        });
-    };
-
-    $scope.changeFriendshipStatus = function () {
-        UserService.changeStatus( $scope.friendId, $scope.friendStatus ).then( function( response )  {
-            $scope.$broadcast('friend-status-changed');
-        });
-    };
-
-    $scope.cancelFriendRequest = function () {
-        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
-            $scope.$broadcast('friend-status-changed');
-        });
-    };
-
-
-    $scope.$on('friend-status-changed', function(event, args) {
-        $scope.checkStatus();
-    });
-
-}]);
-user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
-
-    $scope.user = null;
-    $scope.disabled = true;
-    $scope.message = {
-        messageText: "",
-        receiver: ""
-    };
-
-    $scope.init = function (authId, userId) {
-        $rootScope.authId = authId;
-        $rootScope.userId = userId;
-
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( userId, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-
-    $scope.sendMessage = function()
-    {
-        $scope.message.messageText = $scope.messageBody;
-        $scope.message.receiver = $scope.user.id;
-
-        MessageService.send($scope.message).then(function(response){
-            $scope.messageBody = "";
-        });
-    };
-
-    $scope.checkMessageBody = function () {
-        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
-    };
-    
-}]);
-user.controller( 'UserEditController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.user = null;
-    $scope.disabled = true;
-
-    $scope.init = function (id) {
-
-        UserService.getUser( id ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-
-    $scope.saveUser = function ( ) {
-        UserService.updateUser( $scope.user.id, $scope.user ).then( function( response )
-        {
-           console.log(response);
-        });
-    }
-
-}]);
 app.factory('SocketFactory', function ($rootScope) {
     var socket = io('http://localhost:3000');
     return {

@@ -92,7 +92,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
         if( $scope.postContent != null )
         {
 
-            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude )
+            PostService.save($scope.postContent, $scope.post.location, $scope.post.latitude, $scope.post.longitude, $scope.authId, $scope.userId  )
                 .then( function( response )
             {
                 if( $scope.files != undefined )

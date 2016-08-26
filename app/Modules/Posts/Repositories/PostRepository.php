@@ -16,32 +16,30 @@ class PostRepository extends Repository implements PostRepositoryInterface
     public function posts( $per_page, $current_page, $authId, $userId )
     {
         \DB::enableQueryLog();
-//        $query = $this->model->with( 'user', 'files', 'location' );
-//        if( $id ){
-//            $query = $query->where( 'user_id', $id );
-//        }
-//        return $query->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page );
-
-        if( !$userId ) {
-            $userId = $authId;
-        }
-
-        $friend_id = $this->user
-            ->join('friends', function ($join) use( $authId ){
-                $join->on('friends.friend_id', '=', 'users.id')
-                    ->where('friends.user_id', '=', $authId)
-                    ->orOn('friends.user_id', '=', 'users.id')
-                    ->where('friends.friend_id', '=', $authId);
-            })
-            ->where('friends.friendship', '1')
-            ->select('users.id')
-            ->get()->toArray();
 
         $ids = [];
-        foreach ($friend_id as $id) {
-            $ids[] = $id['id'];
+        if( $userId == '' ) {
+
+            $friend_id = $this->user
+                ->join('friends', function ($join) {
+                    $join->on('friends.friend_id', '=', 'users.id')
+                        ->where('friends.user_id', '=', \Auth::id())
+                        ->orOn('friends.user_id', '=', 'users.id')
+                        ->where('friends.friend_id', '=', \Auth::id());
+                })
+                ->where('friends.friendship', '1')
+                ->select('users.id')
+                ->get()->toArray();
+
+
+            foreach ($friend_id as $id) {
+                $ids[] = $id['id'];
+            }
+            //$ids[] = \Auth::id();
+            \Log::info(\DB::getQueryLog());
+        }else{
+            $ids[] = $userId;
         }
-        $ids[] = \Auth::id();
 
         $data = $this->user
             ->join('posts', function ($join) {
@@ -69,8 +67,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
             )
             ->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page);
 
-
-        \Log::info(\DB::getQueryLog());
+        //\Log::info($ids);
 
         return $data;
     }
@@ -79,7 +76,8 @@ class PostRepository extends Repository implements PostRepositoryInterface
     {
         $post = new Posts();
         $post->content = $data['post'];
-        $post->user_id = \Auth::user()->id;
+        $post->sender_id = \Auth::user()->id;
+        $post->receiver_id = $data['userId'];
 
         if( $data['location'] != '' ){
             $location = new Location();

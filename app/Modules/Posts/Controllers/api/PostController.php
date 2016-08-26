@@ -29,8 +29,8 @@ class PostController extends ApiController
      */
     public function index()
     {
-        Input::get('authId') != null ?  $authId = Input::get('authId') : $authId = null;
-        Input::get('userId') != null ?  $userId = Input::get('userId') : $userId = null;
+        /*Input::get('authId') != null ? */ $authId = Input::get('authId'); /* : $authId = null;*/
+        /*Input::get('userId') != null ? */ $userId = Input::get('userId'); /* : $userId = null; */
         Input::get('per_page') != null ?  $per_page = Input::get('per_page') : $per_page = 15;
         Input::get('current') != null ?  $current_page = Input::get('current') : $current_page = 1;
         return $this->posts->posts( $per_page, $current_page, $authId, $userId );
