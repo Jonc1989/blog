@@ -4,14 +4,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Friends extends Model {
 
-    public static function boot()
-    {
-        parent::boot();
-
-        static::updating( function( $user ){
-            \Log::info( $user );
-        });
-    }
+//    public static function boot()
+//    {
+//        parent::boot();
+//
+//        static::updating( function( $user ){
+//            \Log::info( $user );
+//        });
+//    }
     
     /**
      * The database table used by the model.

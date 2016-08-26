@@ -54,7 +54,7 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
                     ->where( 'friends.user_id', '=', $id )
                 ->orOn( 'users.id', '=', 'friends.user_id')
                     ->where( 'friends.friend_id', '=', $id );
-            })->get();
+            })->where('friendship', '1')->get();
     }
 
     public function invitations()

@@ -20,8 +20,6 @@ class PostRepository extends Repository implements PostRepositoryInterface
         }
 
         return $query->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page );
-        
-        //return $this->model->with('user', 'files')->where( 'user_id', $id )->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page );
     }
 
     public function createPost( $data )

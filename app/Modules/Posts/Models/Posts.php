@@ -38,5 +38,5 @@ class Posts extends Model {
     {
         return $this->belongsTo('App\Modules\Common\Models\Location', 'location_id');
     }
-
+    
 }
