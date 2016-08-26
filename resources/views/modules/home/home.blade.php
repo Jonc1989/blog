@@ -39,7 +39,7 @@
                 <div class="panel panel-default">
                     <div class="panel-heading">Wall</div>
                     <div class="panel-body">
-                        <posts ng-attr-userid=""></posts>
+                        <posts ng-attr-auth-id="<?= \Auth::user()->id; ?>"></posts>
                     </div>
                 </div>
             </div>

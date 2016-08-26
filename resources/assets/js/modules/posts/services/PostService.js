@@ -26,10 +26,10 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
                     }
                 },
 
-            getPosts:  function( perPage, current, id )
+            getPosts:  function( perPage, current, authid, userId )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/posts', { params: {per_page: perPage, current: current, id: id }})
+                $http.get( '/api/posts', { params: {per_page: perPage, current: current, authid: authid, userId: userId }})
                     .success( function( response )
                     {
                         deferred.resolve( response );

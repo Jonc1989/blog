@@ -23,7 +23,18 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
     this.$onInit = function () {
-        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
+
+        if( this.authId !== undefined ){
+            $scope.authId = this.authId;
+            $scope.userId = undefined;
+            $scope.id = this.authId;
+        }else{
+            $scope.authId = $rootScope.authId;
+            $scope.userId = $rootScope.userId;
+            $scope.id = $scope.userId
+        }
+
+        //$stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.authId;
         var input = document.getElementById('search-box');
         $scope.searchBox = new google.maps.places.SearchBox(input);
         $scope.getPosts();
@@ -55,7 +66,8 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.id  ).then(function ( response ) {
+
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  ).then(function ( response ) { console.log(response)
             if( response.current_page <= response.last_page ){
 
                 if( update ){

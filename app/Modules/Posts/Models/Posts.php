@@ -12,7 +12,7 @@ class Posts extends Model {
      *
      * @var array
      */
-    protected $fillable = [ 'name', 'content', 'sender_id', 'receiver_id', 'post_type', 'content_id', 'location_id' ];
+    protected $fillable = [ 'name', 'content', 'sender_id', 'receiver_id', 'post_type', 'content_id', 'location_id', 'created_at', 'updated_at' ];
 
     public function user()
     {

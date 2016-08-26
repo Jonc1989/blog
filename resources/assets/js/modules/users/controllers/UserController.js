@@ -7,11 +7,12 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
         receiver: ""
     };
 
-    $scope.init = function (id) {
-        $rootScope.userId = id; 
+    $scope.init = function (authId, userId) {
+        $rootScope.authId = authId;
+        $rootScope.userId = userId;
 
         var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( id, details ).then( function( response )
+        UserService.getUser( userId, details ).then( function( response )
         {
             $scope.user = response;
         });
