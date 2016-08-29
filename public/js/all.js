@@ -4,11 +4,25 @@ var app = angular.module( 'app', [
     'home',
     'posts',
     'users',
-    'messages'
+    'messages',
+    'galleries'
 
 ] );
 
 
+var galleries = angular.module('galleries', [
+]).config(function($stateProvider, $urlRouterProvider) {
+
+    $urlRouterProvider.otherwise("/");
+
+    $stateProvider
+        .state('create', {
+            url: "/create",
+            templateUrl: "/api/view/modules.galleries.api.create",
+            controller: "GalleryCreateController",
+        })
+
+});
 var home = angular.module('home', [
 
 ]);
@@ -72,6 +86,325 @@ var user = angular.module('users', [ function () {
             });
     });
 
+galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
+                                                                                        GalleriesService, Upload) {
+    
+
+
+    
+
+    $scope.allGalleries = function()
+    {
+        GalleriesService.all().then(function(response)
+        {
+            $scope.galleries = response;
+        });
+    };
+
+    $scope.mineGalleries = function(id)
+    {
+        GalleriesService.mine(id).then(function(response)
+        {
+
+            $scope.galleries = response;
+        });
+    };
+
+}]);
+
+galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', 'Upload', function($scope,
+                                                                                              GalleriesService, Upload) {
+
+    $scope.files = null;
+    $scope.uploaded = false;
+    $scope.gallerySaved = false;
+
+    $scope.$watch('files', function () {
+        if ($scope.files != '') {
+            $scope.previewFiles = $scope.files;
+        }
+    });
+
+    $scope.save = function()
+    {
+        if($scope.files)
+        {
+            if(  $scope.gallerySaved == false )
+            {
+                GalleriesService.save($scope.name).then(function(response)
+                {
+                    if( response.errors != undefined )
+                    {
+                        var $form = $( '.form-group' );
+                        //$form.find( '.help-block' ).remove();
+                        $form.removeClass( 'has-error' );
+                        var $elementGroup = null;
+
+                        for( var key in response.errors )
+                        {
+                            var obj = response.errors[key];
+                            for( var prop in obj )
+                            {
+                                if( obj.hasOwnProperty( prop ) )
+                                {
+                                    $elementGroup = $form.find( '#' + key ).closest( '.form-group' );
+                                    $elementGroup.append( '<p class="help-block s-errors">' + obj[prop] + '</p>' );
+                                    $elementGroup.addClass( 'has-error' );
+                                }
+                            }
+                        }
+                    }
+                    $scope.galleryId = response;
+                    $scope.uploadGallery($scope.galleryId);
+                    $scope.gallerySaved = true;
+                });
+            }else{
+                $scope.uploadGallery($scope.galleryId);
+            }
+
+        }
+    };
+
+    $scope.uploadGallery = function(id)
+    {
+        //GalleriesService.upload($scope.files, id).then(function(response)
+        //{
+        //
+        //});
+        var upload = null;
+        if ($scope.files && $scope.files.length)
+        {
+            // NProgress.start();
+            angular.forEach($scope.files, function(value, key) {
+                if( !$scope.files[key].hasOwnProperty('uploaded') )
+                {
+                    upload = Upload.upload({
+                        url: '/api/save-gallery-images',
+                        data: id,
+                        file: value
+                    }).success(function (response) {
+
+                        $scope.files[key].uploaded = true;
+                        $scope.files[key].id = response.data.id;
+                    }).error(function (response, status)
+                    {
+                        //NProgress.done();
+                    });
+                }
+            });
+        }
+
+        upload.then(function(success, error, progress)
+        {
+            if(error == undefined)
+            {
+                $scope.uploaded = true;
+                //NProgress.done();
+            }
+        });
+    };
+
+    $scope.deleteImage = function(id)
+    {
+        GalleriesService.delete(id).then(function(response)
+        {
+            if( response.errors == undefined )
+            {
+                for( var i = 0; i < $scope.files.length; i++)
+                {
+                    if( $scope.files[i].id == id)
+                    {
+                        $scope.files.splice( i, 1 );
+                    }
+                }
+            }
+        });
+    };
+    
+
+}]);
+
+galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
+    {
+
+        var GalleriesService = {
+
+            upload: function (files, id)
+            {
+                if (files && files.length)
+                {
+                    var deferred = $q.defer();
+
+                    for (var i = 0; i < files.length; i++)
+                    {
+
+                        var file = files[i];
+                        Upload.upload({
+                            url: '/api/save-gallery-images',
+                            data: id,
+                            file: file
+                        }).progress(function (evt) {
+
+                        }).success(function (response) {
+                            //console.log(response);
+                            deferred.resolve( response );
+                        }).error(function (response, status)
+                        {
+                            if (status === 422)
+                            {
+                                deferred.resolve({errors: response});
+                            } else
+                            {
+                                deferred.reject();
+                            }
+                        });
+
+                    }
+                    return deferred.promise;
+                }
+            },
+            save: function(nosaukums)
+            {
+                var deferred = $q.defer();
+                var data = {
+                    name: nosaukums
+                };
+                $http.post( '/api/galleries/', data )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            all: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            mine: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            gallery: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/user-gallery/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            delete: function(id)
+            {
+                var deferred = $q.defer();
+                $http.delete( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+        };
+        return GalleriesService;
+    }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -159,29 +492,6 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
 
     $scope.friendId = null;

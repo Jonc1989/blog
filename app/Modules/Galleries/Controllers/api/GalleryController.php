@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Modules\Galleries\Controllers;
+namespace App\Modules\Galleries\Controllers\api;
 
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
+use App\Modules\Galleries\Repositories\GalleryRepositoryInterface;
 use Illuminate\Http\Request;
 
-class GalleryController extends Controller
+class GalleryController extends ApiController
 {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct( GalleryRepositoryInterface $gallery )
     {
-        $this->middleware('auth');
-        \Blade::setEscapedContentTags( '<%%', '%%>' );
-        \Blade::setContentTags( '<%', '%>' );
+        $this->gallery = $gallery;
     }
 
     /**
@@ -27,7 +27,7 @@ class GalleryController extends Controller
      */
     public function index()
     {
-        return view('modules.galleries.index');
+        return $this->respond( $this->gallery->galleries() );
     }
 
     /**

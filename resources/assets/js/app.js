@@ -4,7 +4,8 @@ var app = angular.module( 'app', [
     'home',
     'posts',
     'users',
-    'messages'
+    'messages',
+    'galleries'
 
 ] );
 

@@ -28,12 +28,10 @@ body {
   padding-left: 15px;
   padding-right: 15px;
   background-color: rgba(255, 255, 255, 0.3);
-  -webkit-transition: all .3s;
   transition: all .3s; }
 
 #search-users:focus {
   background-color: white;
-  -webkit-transition: all .3s;
   transition: all .3s;
   width: 100%; }
 

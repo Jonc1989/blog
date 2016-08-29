@@ -1,0 +1,158 @@
+galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
+    {
+
+        var GalleriesService = {
+
+            upload: function (files, id)
+            {
+                if (files && files.length)
+                {
+                    var deferred = $q.defer();
+
+                    for (var i = 0; i < files.length; i++)
+                    {
+
+                        var file = files[i];
+                        Upload.upload({
+                            url: '/api/save-gallery-images',
+                            data: id,
+                            file: file
+                        }).progress(function (evt) {
+
+                        }).success(function (response) {
+                            //console.log(response);
+                            deferred.resolve( response );
+                        }).error(function (response, status)
+                        {
+                            if (status === 422)
+                            {
+                                deferred.resolve({errors: response});
+                            } else
+                            {
+                                deferred.reject();
+                            }
+                        });
+
+                    }
+                    return deferred.promise;
+                }
+            },
+            save: function(nosaukums)
+            {
+                var deferred = $q.defer();
+                var data = {
+                    name: nosaukums
+                };
+                $http.post( '/api/galleries/', data )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            all: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            mine: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            gallery: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/user-gallery/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            delete: function(id)
+            {
+                var deferred = $q.defer();
+                $http.delete( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+        };
+        return GalleriesService;
+    }] );
