@@ -32,4 +32,15 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Modules\Friends\Models\Friends', 'user_id');
     }
+
+    public function senders()
+    {
+        return $this->hasMany('App\Modules\Posts\Models\Posts', 'sender_id');
+    }
+
+    public function receivers()
+    {
+        return $this->hasMany('App\Modules\Posts\Models\Posts', 'receiver_id');
+    }
 }
+

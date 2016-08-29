@@ -38,9 +38,9 @@
     <div class="row post" ng-repeat="post in posts" style="margin-bottom: 20px;">
         <div class="col-md-12">
             <div >
-                <span ng-bind="post.name + ' '"></span>
-                <span ng-bind="post.surname"></span>
-                <span ng-if="post.address" ng-bind="'@ ' + post.address"></span>
+                <span ng-bind="post.senders.name + ' '"></span>
+                <span ng-bind="post.senders.surname"></span>
+                <span ng-if="post.location.address" ng-bind="'@ ' + post.location.address"></span>
                 <span class="pull-right" ng-bind="post.updated_at"></span>
             </div>
         </div>
@@ -48,8 +48,8 @@
             <div ng-bind="post.content"></div>
         </div>
 
-        <div ng-if="post.latitude && post.longitude" class="col-md-12" id="map_wrap_{{post.p_id}}">
-            <map ng-attr-id="{{ post.p_id }}" ng-attr-latitude="{{ post.latitude }}" ng-attr-longitude="{{ post.longitude }}"></map>
+        <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12" id="map_wrap_{{post.id}}">
+            <map ng-attr-id="{{ post.id }}" ng-attr-latitude="{{ post.location.latitude }}" ng-attr-longitude="{{ post.location.longitude }}"></map>
         </div>
     </div>
     <div class="loader-wrap" style="position: relative" ng-class="{ hidden : !loading}">Loading</div>

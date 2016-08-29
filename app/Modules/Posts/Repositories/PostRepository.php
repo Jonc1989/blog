@@ -15,7 +15,6 @@ class PostRepository extends Repository implements PostRepositoryInterface
 
     public function posts( $per_page, $current_page, $authId, $userId )
     {
-        \DB::enableQueryLog();
 
         $ids = [];
         if( $userId == '' ) {
@@ -35,39 +34,20 @@ class PostRepository extends Repository implements PostRepositoryInterface
             foreach ($friend_id as $id) {
                 $ids[] = $id['id'];
             }
-            //$ids[] = \Auth::id();
-            \Log::info(\DB::getQueryLog());
+            $ids[] = \Auth::id();
+
         }else{
             $ids[] = $userId;
         }
 
-        $data = $this->user
-            ->join('posts', function ($join) {
-                $join->on('posts.sender_id', '=', 'users.id')
-                    ->orOn('posts.receiver_id', '=', 'users.id');
-            })
-            ->leftJoin('location', 'posts.location_id', '=', 'location.id')
-            ->leftJoin('files', 'posts.id', '=', 'files.post_id')
-            ->whereIn('users.id', $ids)
-            ->select(
-                'users.id',
-                'users.name',
-                'users.surname',
-                'posts.id as p_id',
-                'posts.content',
-                'posts.location_id',
-                'posts.updated_at',
-                'location.id as l_id',
-                'location.address',
-                'location.latitude',
-                'location.longitude',
-                'files.id as f_id',
-                'files.file_name'
 
-            )
+        $data = $this->model
+            ->whereIn( 'receiver_id', $ids)
+            ->orWhere(function ($query) use ($ids) {
+                $query->whereIn('sender_id', $ids );
+                    })
+            ->with( 'senders', 'receivers', 'location' )
             ->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page);
-
-        //\Log::info($ids);
 
         return $data;
     }
