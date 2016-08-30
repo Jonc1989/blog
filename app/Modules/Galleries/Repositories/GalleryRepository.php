@@ -19,7 +19,7 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
         if( $id ){
             $ids = $id;
         }else{
-            $friends = $this->friends->userFriends( \Auth::id());
+            $friends = $this->friends->userFriends( \Auth::id()); \Log::info( $friends );
             foreach ( $friends as $friend )
             {
                 $ids[] = $friend->id;

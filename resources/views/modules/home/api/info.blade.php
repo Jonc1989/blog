@@ -1,3 +1,3 @@
 <div id="inf">
-    <div><span ng-bind="user.name + ' '"></span><span ng-bind="user.surname"></span></div>
+    <div><a href="/user/{{ user.id }}"><span ng-bind="user.name + ' '"></span><span ng-bind="user.surname"></span></a> </div>
 </div>

@@ -7,7 +7,7 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
     // };
 
     this.$onInit = function () {
-        var details = [ 'name', 'surname', 'photo' ];
+        var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
             $scope.user = response;

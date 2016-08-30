@@ -13,22 +13,29 @@ var app = angular.module( 'app', [
 var galleries = angular.module('galleries', [
 ]).config(function($stateProvider, $urlRouterProvider) {
 
-    //$urlRouterProvider.otherwise("/");
+    $urlRouterProvider.otherwise("/");
     // $urlRouterProvider.otherwise(function($injector, $location){
     //     console.log('shit happens');
     // });
 
     $stateProvider
         .state('all', {
-            url: "/all",
+            url: "/",
             templateUrl: "/api/view/modules.galleries.api.all",
             controller: "GalleriesController",
+            onEnter: function(){
+                console.log('onEnter')
+            },
+            onExit: function(){
+                console.log( 'onExit' );
+            }
         })
         .state('create', {
             url: "/create",
             templateUrl: "/api/view/modules.galleries.api.create",
             controller: "GalleryCreateController",
         })
+
 
 });
 var home = angular.module('home', [
@@ -117,7 +124,7 @@ galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Uplo
     {
         GalleriesService.mine(id).then(function(response)
         {
-
+            console.log(response)
             $scope.galleryData = response;
         });
     };
@@ -187,6 +194,29 @@ galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', '
 
 }]);
 
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
     {
 
@@ -345,29 +375,6 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -377,7 +384,7 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
     // };
 
     this.$onInit = function () {
-        var details = [ 'name', 'surname', 'photo' ];
+        var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( this.id, details ).then( function( response )
         {
             $scope.user = response;
@@ -511,6 +518,13 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
     };
     
 }]);
+post.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController',
+    bindings: {
+        authId: '<'
+    }
+})
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
         var MessageService = {
@@ -610,13 +624,6 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
-post.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController',
-    bindings: {
-        authId: '<'
-    }
-})
 post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', 'SocketFactory',
     function ( PostService, $scope, Upload, $stateParams, $rootScope, SocketFactory ) {
 

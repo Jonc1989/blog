@@ -21,7 +21,7 @@ galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Uplo
     {
         GalleriesService.mine(id).then(function(response)
         {
-
+            console.log(response)
             $scope.galleryData = response;
         });
     };
