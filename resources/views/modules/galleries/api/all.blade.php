@@ -1,5 +1,4 @@
 <div class="col-md-6" >
-    <div>Visas</div>
     <div class="col-md-4 clear-pads" ng-repeat="item in galleryData">
         <div class="gallery">
             <a href="">

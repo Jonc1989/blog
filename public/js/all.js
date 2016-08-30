@@ -13,35 +13,31 @@ var app = angular.module( 'app', [
 var galleries = angular.module('galleries', [
 ]).config(function($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise("/");
+
     // $urlRouterProvider.otherwise(function($injector, $location){
     //     console.log('shit happens');
     // });
-
-    $stateProvider
-        .state('all', {
-            url: "/",
-            templateUrl: "/api/view/modules.galleries.api.all",
-            controller: "GalleriesController",
-            onEnter: function(){
-                console.log('onEnter')
-            },
-            onExit: function(){
-                console.log( 'onExit' );
-            }
-        })
-        .state('create', {
-            url: "/create",
-            templateUrl: "/api/view/modules.galleries.api.create",
-            controller: "GalleryCreateController",
-        })
+    // $urlRouterProvider.otherwise("/all");
+    // $stateProvider
+    //     .state('all', {
+    //         url: "/all",
+    //         templateUrl: "/api/view/modules.galleries.api.all",
+    //         controller: "GalleriesController",
+    //         onEnter: function(){
+    //             console.log('onEnter')
+    //         },
+    //         onExit: function(){
+    //             console.log( 'onExit' );
+    //         }
+    //     })
+    //     .state('create', {
+    //         url: "/create",
+    //         templateUrl: "/api/view/modules.galleries.api.create",
+    //         controller: "GalleryCreateController",
+    //     })
 
 
 });
-var home = angular.module('home', [
-
-]);
-
 var messages = angular.module('messages', [
     
 ])
@@ -67,6 +63,10 @@ var messages = angular.module('messages', [
         //         }
         //     });
     });
+
+var home = angular.module('home', [
+
+]);
 
 var post = angular.module('posts', [
 
@@ -104,13 +104,10 @@ var user = angular.module('users', [ function () {
 galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
                                                                                         GalleriesService, Upload) {
     this.$onInit = function () {
-        console.log('init');
+        console.log($scope);
         $scope.friendGalleries();
     };
-
-
     
-
     $scope.friendGalleries = function()
     {
         GalleriesService.all().then(function(response)
@@ -134,7 +131,7 @@ galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Uplo
 galleries.controller('GalleriesStateController', ['$state', function( $state ) {
     
     this.$onInit = function () {
-        console.log('state change time')
+        console.log('state change')
         $state.go( 'all' );
     };
     
@@ -194,29 +191,6 @@ galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', '
 
 }]);
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
     {
 
@@ -375,93 +349,6 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-    // $scope.init = function (id) {
-    //     this.id = id;
-    //    
-    // };
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.users = [];
-    
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.onlineUsers( details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
 messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
 
     $scope.friendId = null;
@@ -518,13 +405,6 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
     };
     
 }]);
-post.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController',
-    bindings: {
-        authId: '<'
-    }
-})
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
         var MessageService = {
@@ -624,6 +504,123 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+    // $scope.init = function (id) {
+    //     this.id = id;
+    //    
+    // };
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
+post.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController',
+    bindings: {
+        authId: '<'
+    }
+})
 post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', 'SocketFactory',
     function ( PostService, $scope, Upload, $stateParams, $rootScope, SocketFactory ) {
 

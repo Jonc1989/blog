@@ -105,7 +105,7 @@ class GalleryController extends ApiController
      */
     public function show($id)
     {
-        return $this->respond( $this->gallery->galleries( $id ) );
+        return $this->respond( $this->gallery->galleries( [ $id ] ) );
     }
 
     /**

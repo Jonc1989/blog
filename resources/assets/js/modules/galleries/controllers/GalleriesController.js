@@ -1,13 +1,10 @@
 galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
                                                                                         GalleriesService, Upload) {
     this.$onInit = function () {
-        console.log('init');
+        console.log($scope);
         $scope.friendGalleries();
     };
-
-
     
-
     $scope.friendGalleries = function()
     {
         GalleriesService.all().then(function(response)
