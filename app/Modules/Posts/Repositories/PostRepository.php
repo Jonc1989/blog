@@ -57,7 +57,10 @@ class PostRepository extends Repository implements PostRepositoryInterface
         $post = new Posts();
         $post->content = $data['post'];
         $post->sender_id = \Auth::user()->id;
-        $post->receiver_id = $data['userId'];
+        if (array_key_exists('userId', $data)) {
+            $post->receiver_id = $data['userId'];
+        }
+
 
         if( $data['location'] != '' ){
             $location = new Location();

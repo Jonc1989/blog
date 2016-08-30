@@ -1,8 +1,6 @@
-@extends('layouts.app')
 
-@section('content')
 
-<div ng-controller="GalleryCreateController">
+<div>
     <div class="col-md-12">
         <form  name="galleryUploadForm" ng-submit="save()" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="<?= csrf_token() ?>">
@@ -51,5 +49,3 @@
 </div>
 
 
-
-@endsection

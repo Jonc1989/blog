@@ -3,7 +3,7 @@ var messages = angular.module('messages', [
 ])
     .config(function($stateProvider, $urlRouterProvider) {
 
-        $urlRouterProvider.otherwise("/");
+        //$urlRouterProvider.otherwise("/");
 
         // $stateProvider
         //     .state('messages', {

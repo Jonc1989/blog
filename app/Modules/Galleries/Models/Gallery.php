@@ -22,4 +22,9 @@ class Gallery extends Model {
     {
         return $this->hasMany('App\Modules\Galleries\Models\Files', 'gallery_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo( 'App\Modules\Users\Models\User' );
+    }
 }

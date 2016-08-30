@@ -13,9 +13,17 @@ var app = angular.module( 'app', [
 var galleries = angular.module('galleries', [
 ]).config(function($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise("/");
+    //$urlRouterProvider.otherwise("/");
+    // $urlRouterProvider.otherwise(function($injector, $location){
+    //     console.log('shit happens');
+    // });
 
     $stateProvider
+        .state('all', {
+            url: "/all",
+            templateUrl: "/api/view/modules.galleries.api.all",
+            controller: "GalleriesController",
+        })
         .state('create', {
             url: "/create",
             templateUrl: "/api/view/modules.galleries.api.create",
@@ -32,7 +40,7 @@ var messages = angular.module('messages', [
 ])
     .config(function($stateProvider, $urlRouterProvider) {
 
-        $urlRouterProvider.otherwise("/");
+        //$urlRouterProvider.otherwise("/");
 
         // $stateProvider
         //     .state('messages', {
@@ -64,7 +72,7 @@ var user = angular.module('users', [ function () {
     .config(function($stateProvider, $urlRouterProvider) {
         //
         // For any unmatched url, redirect to /state1
-        $urlRouterProvider.otherwise("/");
+        //$urlRouterProvider.otherwise("/");
         //
         // Now set up the states
         $stateProvider
@@ -88,16 +96,20 @@ var user = angular.module('users', [ function () {
 
 galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
                                                                                         GalleriesService, Upload) {
-    
+    this.$onInit = function () {
+        console.log('init');
+        $scope.friendGalleries();
+    };
 
 
     
 
-    $scope.allGalleries = function()
+    $scope.friendGalleries = function()
     {
         GalleriesService.all().then(function(response)
         {
-            $scope.galleries = response;
+            console.log(response)
+            $scope.galleryData = response;
         });
     };
 
@@ -106,15 +118,25 @@ galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Uplo
         GalleriesService.mine(id).then(function(response)
         {
 
-            $scope.galleries = response;
+            $scope.galleryData = response;
         });
     };
 
 }]);
 
+galleries.controller('GalleriesStateController', ['$state', function( $state ) {
+    
+    this.$onInit = function () {
+        console.log('state change time')
+        $state.go( 'all' );
+    };
+    
+
+}]);
+
 galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', 'Upload', function($scope,
                                                                                               GalleriesService, Upload) {
-
+    $scope.name = '';
     $scope.files = null;
     $scope.uploaded = false;
     $scope.gallerySaved = false;
@@ -127,82 +149,23 @@ galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', '
 
     $scope.save = function()
     {
-        if($scope.files)
+        if( $scope.name != '' )
         {
-            if(  $scope.gallerySaved == false )
-            {
-                GalleriesService.save($scope.name).then(function(response)
-                {
-                    if( response.errors != undefined )
-                    {
-                        var $form = $( '.form-group' );
-                        //$form.find( '.help-block' ).remove();
-                        $form.removeClass( 'has-error' );
-                        var $elementGroup = null;
-
-                        for( var key in response.errors )
-                        {
-                            var obj = response.errors[key];
-                            for( var prop in obj )
-                            {
-                                if( obj.hasOwnProperty( prop ) )
-                                {
-                                    $elementGroup = $form.find( '#' + key ).closest( '.form-group' );
-                                    $elementGroup.append( '<p class="help-block s-errors">' + obj[prop] + '</p>' );
-                                    $elementGroup.addClass( 'has-error' );
-                                }
-                            }
-                        }
-                    }
-                    $scope.galleryId = response;
-                    $scope.uploadGallery($scope.galleryId);
-                    $scope.gallerySaved = true;
-                });
-            }else{
-                $scope.uploadGallery($scope.galleryId);
-            }
-
-        }
-    };
-
-    $scope.uploadGallery = function(id)
-    {
-        //GalleriesService.upload($scope.files, id).then(function(response)
-        //{
-        //
-        //});
-        var upload = null;
-        if ($scope.files && $scope.files.length)
-        {
-            // NProgress.start();
-            angular.forEach($scope.files, function(value, key) {
-                if( !$scope.files[key].hasOwnProperty('uploaded') )
-                {
-                    upload = Upload.upload({
-                        url: '/api/save-gallery-images',
-                        data: id,
-                        file: value
-                    }).success(function (response) {
-
-                        $scope.files[key].uploaded = true;
-                        $scope.files[key].id = response.data.id;
-                    }).error(function (response, status)
-                    {
-                        //NProgress.done();
-                    });
-                }
+            Upload.upload({
+                url: '/api/galleries/',
+                data: { files: $scope.files, name: $scope.name }}
+            ).success(function (response) {
+                $scope.files = null;
+                $scope.clearInputs();
             });
-        }
 
-        upload.then(function(success, error, progress)
-        {
-            if(error == undefined)
-            {
-                $scope.uploaded = true;
-                //NProgress.done();
-            }
-        });
+        }
     };
+
+    $scope.clearInputs = function () {
+        $scope.name = '';
+    };
+
 
     $scope.deleteImage = function(id)
     {
@@ -263,15 +226,15 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
                     return deferred.promise;
                 }
             },
-            save: function(nosaukums)
+            save: function( name )
             {
                 var deferred = $q.defer();
                 var data = {
-                    name: nosaukums
+                    name: name
                 };
                 $http.post( '/api/galleries/', data )
                     .success( function( response )
-                    {
+                    {console.log();
                         deferred.resolve( response );
                     } )
                     .error( function( response, status )
@@ -723,7 +686,7 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
 
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  ).then(function ( response ) { console.log(response)
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  ).then(function ( response ) {
             if( response.current_page <= response.last_page ){
 
                 if( update ){

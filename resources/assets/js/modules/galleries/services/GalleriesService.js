@@ -37,15 +37,15 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
                     return deferred.promise;
                 }
             },
-            save: function(nosaukums)
+            save: function( name )
             {
                 var deferred = $q.defer();
                 var data = {
-                    name: nosaukums
+                    name: name
                 };
                 $http.post( '/api/galleries/', data )
                     .success( function( response )
-                    {
+                    {console.log();
                         deferred.resolve( response );
                     } )
                     .error( function( response, status )

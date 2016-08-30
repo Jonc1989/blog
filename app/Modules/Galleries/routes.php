@@ -10,4 +10,5 @@ Route::group(['middleware' => ['web']], function () {
 
     });
 
+    Route::get( 'image/{user}/{gallery_id}/{id}', 'App\Modules\Galleries\Controllers\api\GalleryController@read' );
 });

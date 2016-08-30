@@ -3,10 +3,12 @@
 namespace App\Modules\Galleries\Controllers\api;
 
 use App\Http\Controllers\ApiController;
-use App\Http\Controllers\Controller;
+use App\Modules\Galleries\Repositories\FileRepositoryInterface;
+use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use App\Modules\Galleries\Repositories\GalleryRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 class GalleryController extends ApiController
 {
@@ -15,9 +17,10 @@ class GalleryController extends ApiController
      *
      * @return void
      */
-    public function __construct( GalleryRepositoryInterface $gallery )
+    public function __construct( GalleryRepositoryInterface $gallery, FileRepositoryInterface $files )
     {
         $this->gallery = $gallery;
+        $this->files = $files;
     }
 
     /**
@@ -48,7 +51,50 @@ class GalleryController extends ApiController
      */
     public function store(Request $request)
     {
-        //
+        $galleryId = null;
+        if(Input::get('name'))
+        {
+            $galleryId = $this->gallery->saveName( Input::get('name') );
+
+
+            $response = null;
+            $path = storage_path() . '\users\\' . \Auth::user()->id . '\galleries\\' . $galleryId;
+            $max_size = 10097152;
+            $files = Input::file( 'files');
+            \Log::info(Input::file());
+
+            foreach( $files as $file ){
+
+                    $imageName = str_random(30) . '.' . $file->getClientOriginalExtension();
+
+                    if($file->getSize() < $max_size)
+                    {
+                        $response = $file->move( $path, $imageName );
+
+                        //                $manager     = new ImageManager();
+                        //                $height = $manager->make($path.$imageName)->height();
+                        //                $width = $manager->make($path.$imageName)->width();
+                        //
+                        //                $index = $width / $height;
+                        //
+                        //                $manager->make($path.$imageName)->resize( (228 * $index), 228 )
+                        //                    ->crop(228, 228)->save($thumb_path . $imageName);
+
+                        $data = $this->files->create([
+                            'file_name'      => $imageName,
+                            'thumb'         => $imageName,
+                            'original_name' => $file->getClientOriginalName(),
+                            'gallery_id'    => $galleryId,
+                            'path'          => $path . '\\' . $imageName
+                        ]);
+
+                    }else{
+                        return $this->respondError();
+                    }
+            }
+        }else{
+            return $this->respondError();
+        }
     }
 
     /**
@@ -59,7 +105,7 @@ class GalleryController extends ApiController
      */
     public function show($id)
     {
-        //
+        return $this->respond( $this->gallery->galleries( $id ) );
     }
 
     /**
@@ -95,4 +141,15 @@ class GalleryController extends ApiController
     {
         //
     }
+
+    public function read( $user_id, $gallery, $id )
+    {
+   \Log::info( $id );
+        //$file = $this->files->find( $id );
+
+        $response = Response::make( \File::get( storage_path() . '/users/' . $user_id . '/galleries/' . $gallery . '/' . $id ), 200 );
+        $response->header("Content-Type", 'image/jpeg');
+        return $response;
+    }
+
 }

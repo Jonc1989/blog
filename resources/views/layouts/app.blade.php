@@ -49,7 +49,7 @@
                 <!-- Left Side Of Navbar -->
                 <ul class="nav navbar-nav">
                     <li><a href="/messages">Vēstules</a></li>
-                    <li><a href="/galleries">Galerijas</a></li>
+                    <li><a href="/galleries/">Galerijas</a></li>
                 </ul>
 
                 <!-- Right Side Of Navbar -->

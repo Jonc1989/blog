@@ -4,7 +4,7 @@
     <search></search>
 
 
-    <div class="col-md-12 col-md-offset-0" ng-controller="UserEditController" ng-init="init(<?= $id ?>)">
+    <div class="col-md-9 col-md-offset-0" ng-controller="UserEditController" ng-init="init(<?= $id ?>)">
 
     <!--<user-info id="<?= $id ?>"></user-info>-->
         <div class="col-md-3">
