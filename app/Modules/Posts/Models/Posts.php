@@ -38,5 +38,10 @@ class Posts extends Model {
     {
         return $this->belongsTo('App\Modules\Common\Models\Location', 'location_id');
     }
+
+    public function likes()
+    {
+        return $this->hasMany( 'App\Modules\Common\Models\Likes', 'post_id' );
+    }
     
 }

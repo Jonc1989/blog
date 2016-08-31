@@ -1,7 +1,6 @@
 
 
-<div>
-    <div class="col-md-12">
+    <div class="col-md-9" ng-controller="GalleryCreateController">
         <form  name="galleryUploadForm" ng-submit="save()" enctype="multipart/form-data">
             <input type="hidden" name="_token" value="<?= csrf_token() ?>">
 
@@ -46,6 +45,3 @@
 
 
     </div>
-</div>
-
-

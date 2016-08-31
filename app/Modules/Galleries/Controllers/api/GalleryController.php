@@ -30,7 +30,7 @@ class GalleryController extends ApiController
      */
     public function index()
     {
-        return $this->respond( $this->gallery->galleries() );
+        return $this->respond( $this->gallery->galleries( Input::get( 'auth' ) ) );
     }
 
     /**
@@ -61,7 +61,7 @@ class GalleryController extends ApiController
             $path = storage_path() . '\users\\' . \Auth::user()->id . '\galleries\\' . $galleryId;
             $max_size = 10097152;
             $files = Input::file( 'files');
-            \Log::info(Input::file());
+
 
             foreach( $files as $file ){
 
@@ -105,7 +105,7 @@ class GalleryController extends ApiController
      */
     public function show($id)
     {
-        return $this->respond( $this->gallery->galleries( [ $id ] ) );
+        return $this->respond( $this->gallery->gallery( $id ) );
     }
 
     /**

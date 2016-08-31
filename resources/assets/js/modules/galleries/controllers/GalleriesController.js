@@ -1,26 +1,26 @@
-galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
-                                                                                        GalleriesService, Upload) {
+galleries.controller('GalleriesController', ['$scope', 'GalleriesService', '$state', function($scope,
+                                                                        GalleriesService, $state ) {
+
+    $scope.galleryData = [];
+    
     this.$onInit = function () {
-        console.log($scope);
-        $scope.friendGalleries();
+        $state.go( 'all' );
     };
     
-    $scope.friendGalleries = function()
+    $scope.getGalleries = function(auth)
     {
-        GalleriesService.all().then(function(response)
+        GalleriesService.all(auth).then(function(response)
         {
-            console.log(response)
             $scope.galleryData = response;
         });
     };
-
-    $scope.mineGalleries = function(id)
-    {
-        GalleriesService.mine(id).then(function(response)
-        {
-            console.log(response)
-            $scope.galleryData = response;
-        });
-    };
+    //
+    // $scope.mineGalleries = function( auth )
+    // {
+    //     GalleriesService.all(auth).then(function(response)
+    //     {
+    //         $scope.galleryData = response;
+    //     });
+    // };
 
 }]);

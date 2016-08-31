@@ -30,6 +30,9 @@
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#sendMessage">
                         Vēstule
                     </button>
+                    <!--<button type="button" class="btn btn-primary btn-sm" ng-click="ngMessage()">
+                        Vēstule ar ngDialog
+                    </button>-->
 
                     <!-- Modal -->
                     <div class="modal fade" id="sendMessage" tabindex="-1" role="dialog" aria-labelledby="sendMessageLabel">

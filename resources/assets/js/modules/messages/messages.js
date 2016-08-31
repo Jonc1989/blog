@@ -1,5 +1,5 @@
 var messages = angular.module('messages', [
-    
+
 ])
     .config(function($stateProvider, $urlRouterProvider) {
 

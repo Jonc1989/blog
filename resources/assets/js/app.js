@@ -5,7 +5,8 @@ var app = angular.module( 'app', [
     'posts',
     'users',
     'messages',
-    'galleries'
+    'galleries',
+    'ngDialog'
 
 ] );
 

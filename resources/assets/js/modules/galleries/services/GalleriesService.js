@@ -63,10 +63,10 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
 
             },
 
-            all: function()
+            all: function( auth )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/galleries/' )
+                $http.get( '/api/galleries/', { params: { auth: auth } } )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -86,32 +86,32 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
 
             },
 
-            mine: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
+            // mine: function(id)
+            // {
+            //     var deferred = $q.defer();
+            //     $http.get( '/api/galleries/' + id)
+            //         .success( function( response )
+            //         {
+            //             deferred.resolve( response );
+            //         } )
+            //         .error( function( response, status )
+            //         {
+            //             if (status === 422)
+            //             {
+            //                 deferred.resolve({errors: response});
+            //             } else
+            //             {
+            //                 deferred.reject();
+            //             }
+            //         } );
+            //
+            //     return deferred.promise;
+            //
+            // },
             gallery: function(id)
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user-gallery/' + id)
+                $http.get( '/api/galleries/' + id)
                     .success( function( response )
                     {
                         deferred.resolve( response );

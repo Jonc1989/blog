@@ -8,7 +8,7 @@ interface GalleryRepositoryInterface
 
     public function saveName( $name );
 
-    public function galleries( $id = null );
+    public function galleries( $auth );
 
     public function gallery( $id );
 

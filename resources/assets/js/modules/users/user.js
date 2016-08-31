@@ -1,16 +1,13 @@
-var user = angular.module('users', [ function () {
-    
-
-}])
-    .config(function($stateProvider, $urlRouterProvider) {
+var user = angular.module('users', [ ])
+    .config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
         //
         // For any unmatched url, redirect to /state1
-        //$urlRouterProvider.otherwise("/");
+        //$urlRouterProvider.otherwise("/posts");
         //
         // Now set up the states
         $stateProvider
             .state('posts', {
-                url: "/",
+                url: "/posts",
                 templateUrl: "/api/view/modules.posts.api.posts",
                 controller: "PostController",
                 params: {
@@ -25,4 +22,4 @@ var user = angular.module('users', [ function () {
                     id: null
                 }
             });
-    });
+    }]);

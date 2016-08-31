@@ -2,11 +2,13 @@
 
 Route::group(['middleware' => ['web']], function () {
     
-    Route::group( [ 'prefix' => 'api' ], function (){
+    Route::group( [ 'prefix' => 'api/posts' ], function (){
         
-        Route::resource('/posts', 'App\Modules\Posts\Controllers\api\PostController');
+        Route::resource('/', 'App\Modules\Posts\Controllers\api\PostController');
 
-        Route::resource('/posts/save-file', 'App\Modules\Posts\Controllers\api\PostController@save_file');
+        Route::resource('/save-file', 'App\Modules\Posts\Controllers\api\PostController@save_file');
+
+        Route::post('/like', 'App\Modules\Common\Controllers\LikeController@like');
         
     });
     

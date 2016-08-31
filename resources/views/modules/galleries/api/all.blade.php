@@ -1,4 +1,5 @@
 <div class="col-md-6" >
+    <div>list</div>
     <div class="col-md-4 clear-pads" ng-repeat="item in galleryData">
         <div class="gallery">
             <a href="">
@@ -7,7 +8,7 @@
                 </div>
             </a>
         </div>
-        <div><a href="/galleries/{{ item.id }}"> <span ng-bind="item.name + ' '"></span></a></div>
+        <div><a ui-sref="show({ id: item.id })"> <span ng-bind="item.name + ' '"></span></a></div>
         <div><span ng-bind="item.user.name + ' '"></span><span ng-bind="item.user.surname"></span></div>
     </div>
 </div>

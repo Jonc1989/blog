@@ -1,4 +1,5 @@
-user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state', 'ngDialog',
+    function ( UserService, MessageService, $scope, $rootScope, $state, ngDialog ) {
 
     $scope.user = null;
     $scope.disabled = true;
@@ -10,7 +11,7 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
     $scope.init = function (authId, userId) {
         $rootScope.authId = authId;
         $rootScope.userId = userId;
-
+        $state.go('posts');
         var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( userId, details ).then( function( response )
         {
@@ -31,5 +32,9 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
     $scope.checkMessageBody = function () {
         $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
+
+    // $scope.ngMessage = function () {
+    //     ngDialog.open({ template: '/api/view/modules.messages.api.dialog', className: 'ngdialog-theme-default' });
+    // };
     
 }]);

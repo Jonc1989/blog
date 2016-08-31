@@ -67,7 +67,8 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
 
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  ).then(function ( response ) {
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  )
+            .then(function ( response ) {
             if( response.current_page <= response.last_page ){
 
                 if( update ){

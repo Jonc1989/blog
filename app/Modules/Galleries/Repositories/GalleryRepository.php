@@ -13,13 +13,13 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
         $this->friends = $friends;
     }
 
-    public function galleries( $id = null )
+    public function galleries( $auth )
     {
         $ids = [];
-        if( $id ){
-            $ids = $id;
+        if( $auth == 'true' ){
+            $ids = [\Auth::id()];
         }else{
-            $friends = $this->friends->userFriends( \Auth::id()); \Log::info( $friends );
+            $friends = $this->friends->userFriends( \Auth::id());
             foreach ( $friends as $friend )
             {
                 $ids[] = $friend->id;
@@ -40,7 +40,7 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
 
     public function gallery( $id )
     {
-        return $this->model->with('images')->find($id);
+        return $this->model->with('files', 'user' )->find($id);
 
     }
 

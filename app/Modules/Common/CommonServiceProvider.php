@@ -21,5 +21,8 @@ class CommonServiceProvider extends ModuleServiceProvider
 
         $this->app->bind('App\Modules\Common\Repositories\LocationRepositoryInterface',
             'App\Modules\Common\Repositories\LocationRepository');
+
+        $this->app->bind('App\Modules\Common\Repositories\LikesRepositoryInterface',
+            'App\Modules\Common\Repositories\LikesRepository');
     }
 }

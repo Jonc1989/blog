@@ -17,12 +17,14 @@ elixir(function(mix) {
             '*.js',
             'modules/**/*.js',
             'modules/**/**/*.js',
+            'directives/*.js',
             'services/*.js',
-            'directives/*.js'
+
         ])
         .scripts([
             //'../../../node_modules/bootstrap-sass/assets/javascripts/bootstrap.min.js',
-            //'../../../node_modules/ngcomponentrouter/angular_1_router.js'
+            //'../../../node_modules/ngcomponentrouter/angular_1_router.js',
+            //'../../../node_modules/ng-dialog/js/ngDialog.min.js'
         ],
         'public/js/vendor/core.js');
 });

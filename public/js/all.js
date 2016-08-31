@@ -5,41 +5,52 @@ var app = angular.module( 'app', [
     'posts',
     'users',
     'messages',
-    'galleries'
+    'galleries',
+    'ngDialog'
 
 ] );
 
 
 var galleries = angular.module('galleries', [
-]).config(function($stateProvider, $urlRouterProvider) {
+
+]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
 
 
     // $urlRouterProvider.otherwise(function($injector, $location){
     //     console.log('shit happens');
     // });
-    // $urlRouterProvider.otherwise("/all");
-    // $stateProvider
-    //     .state('all', {
-    //         url: "/all",
-    //         templateUrl: "/api/view/modules.galleries.api.all",
-    //         controller: "GalleriesController",
-    //         onEnter: function(){
-    //             console.log('onEnter')
-    //         },
-    //         onExit: function(){
-    //             console.log( 'onExit' );
-    //         }
-    //     })
-    //     .state('create', {
-    //         url: "/create",
-    //         templateUrl: "/api/view/modules.galleries.api.create",
-    //         controller: "GalleryCreateController",
-    //     })
+    //$urlRouterProvider.otherwise("/all");
+    $stateProvider
+        .state('all', {
+            url: "/all",
+            templateUrl: "/api/view/modules.galleries.api.all",
+            controller: "FriendGalleriesController"
+        })
+        .state('mine', {
+            url: "/mine",
+            templateUrl: "/api/view/modules.galleries.api.all",
+            controller: "MineGalleriesController"
+        })
+        .state('create', {
+            url: "/create",
+            templateUrl: "/api/view/modules.galleries.api.create",
+            controller: "GalleryCreateController",
+        })
+        .state('show', {
+            url: "/show/:id",
+            templateUrl: "/api/view/modules.galleries.api.details",
+            controller: "GalleryDetailsController",
+        })
 
 
-});
+}]);
+
+var home = angular.module('home', [
+
+]);
+
 var messages = angular.module('messages', [
-    
+
 ])
     .config(function($stateProvider, $urlRouterProvider) {
 
@@ -64,27 +75,20 @@ var messages = angular.module('messages', [
         //     });
     });
 
-var home = angular.module('home', [
-
-]);
-
 var post = angular.module('posts', [
 
 ]);
 
-var user = angular.module('users', [ function () {
-    
-
-}])
-    .config(function($stateProvider, $urlRouterProvider) {
+var user = angular.module('users', [ ])
+    .config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
         //
         // For any unmatched url, redirect to /state1
-        //$urlRouterProvider.otherwise("/");
+        //$urlRouterProvider.otherwise("/posts");
         //
         // Now set up the states
         $stateProvider
             .state('posts', {
-                url: "/",
+                url: "/posts",
                 templateUrl: "/api/view/modules.posts.api.posts",
                 controller: "PostController",
                 params: {
@@ -99,42 +103,42 @@ var user = angular.module('users', [ function () {
                     id: null
                 }
             });
-    });
+    }]);
 
-galleries.controller('GalleriesController', ['$scope', 'GalleriesService', 'Upload', function($scope,
-                                                                                        GalleriesService, Upload) {
-    this.$onInit = function () {
-        console.log($scope);
-        $scope.friendGalleries();
-    };
+galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
-    $scope.friendGalleries = function()
-    {
-        GalleriesService.all().then(function(response)
-        {
-            console.log(response)
-            $scope.galleryData = response;
-        });
-    };
-
-    $scope.mineGalleries = function(id)
-    {
-        GalleriesService.mine(id).then(function(response)
-        {
-            console.log(response)
-            $scope.galleryData = response;
-        });
+    
+    this.$onInit = function () {
+        $controller('GalleriesController', { $scope: $scope });
+        $scope.getGalleries( false );
     };
 
 }]);
 
-galleries.controller('GalleriesStateController', ['$state', function( $state ) {
+galleries.controller('GalleriesController', ['$scope', 'GalleriesService', '$state', function($scope,
+                                                                        GalleriesService, $state ) {
+
+    $scope.galleryData = [];
     
     this.$onInit = function () {
-        console.log('state change')
         $state.go( 'all' );
     };
     
+    $scope.getGalleries = function(auth)
+    {
+        GalleriesService.all(auth).then(function(response)
+        {
+            $scope.galleryData = response;
+        });
+    };
+    //
+    // $scope.mineGalleries = function( auth )
+    // {
+    //     GalleriesService.all(auth).then(function(response)
+    //     {
+    //         $scope.galleryData = response;
+    //     });
+    // };
 
 }]);
 
@@ -188,6 +192,33 @@ galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', '
         });
     };
     
+
+}]);
+
+galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', '$stateParams',
+    function($scope, GalleriesService, $stateParams) {
+        
+        $scope.id = $stateParams.id;
+        $scope.gallery = {};
+
+        this.$onInit = function()
+        {
+            GalleriesService.gallery($scope.id).then(function(response)
+            {
+                $scope.gallery = response;
+            });
+        };
+
+
+    }]);
+
+galleries.controller('MineGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
+
+    this.$onInit = function () {
+        $controller('GalleriesController', { $scope: $scope });
+        $scope.getGalleries( true );
+    };
+
 
 }]);
 
@@ -256,10 +287,10 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
 
             },
 
-            all: function()
+            all: function( auth )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/galleries/' )
+                $http.get( '/api/galleries/', { params: { auth: auth } } )
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -279,32 +310,32 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
 
             },
 
-            mine: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
+            // mine: function(id)
+            // {
+            //     var deferred = $q.defer();
+            //     $http.get( '/api/galleries/' + id)
+            //         .success( function( response )
+            //         {
+            //             deferred.resolve( response );
+            //         } )
+            //         .error( function( response, status )
+            //         {
+            //             if (status === 422)
+            //             {
+            //                 deferred.resolve({errors: response});
+            //             } else
+            //             {
+            //                 deferred.reject();
+            //             }
+            //         } );
+            //
+            //     return deferred.promise;
+            //
+            // },
             gallery: function(id)
             {
                 var deferred = $q.defer();
-                $http.get( '/api/user-gallery/' + id)
+                $http.get( '/api/galleries/' + id)
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -349,6 +380,116 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+    // $scope.init = function (id) {
+    //     this.id = id;
+    //    
+    // };
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.users = [];
+    
+    this.$onInit = function () {
+        var details = ['name', 'surname', 'photo'];
+        UserService.onlineUsers( details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
 messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
 
     $scope.friendId = null;
@@ -504,116 +645,15 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
+post.component( 'like', {
+    templateUrl: '/api/view/modules.posts.api.like',
+    controller: 'LikeController',
     bindings: {
-        id: '<'
+        likes: '@',
+        authId: '<',
+        postId: '@'
     }
 })
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-    // $scope.init = function (id) {
-    //     this.id = id;
-    //    
-    // };
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.users = [];
-    
-    this.$onInit = function () {
-        var details = ['name', 'surname', 'photo'];
-        UserService.onlineUsers( details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
 post.component( 'posts', {
     templateUrl: '/api/view/modules.posts.api.posts',
     controller: 'PostController',
@@ -621,6 +661,39 @@ post.component( 'posts', {
         authId: '<'
     }
 })
+post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, PostService ) {
+        
+    $scope.likeStatus = false;
+    $scope.likes = [];
+    $scope.authId = null;
+    $scope.postId = null;
+    this.$onInit = function () {
+        $scope.likes = JSON.parse( this.likes );
+        $scope.authId = this.authId;
+        $scope.postId = this.postId;
+        $scope.checkLikeStatus();
+    };
+
+    $scope.checkLikeStatus = function () {
+        $scope.likes.forEach(function ( like ) {
+            if( like.user.id == $scope.authId ){
+                $scope.likeStatus = true;
+            }
+        })
+
+    };
+
+    $scope.like = function () {
+        PostService.like( $scope.authId, $scope.postId, $scope.likeStatus ).then(function ( response ) {
+            console.log( response );
+        });
+    };    
+        
+        
+        
+        
+        
+    }]);
 post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateParams', '$rootScope', 'SocketFactory',
     function ( PostService, $scope, Upload, $stateParams, $rootScope, SocketFactory ) {
 
@@ -690,7 +763,8 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
     $scope.getPosts = function ( update ) {
         $scope.loading = true;
 
-        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  ).then(function ( response ) {
+        PostService.getPosts( update == true ? $scope.total + 1 : $scope.per_page, update == true ? $scope.next_page - 1 : $scope.next_page, $scope.authId, $scope.userId  )
+            .then(function ( response ) {
             if( response.current_page <= response.last_page ){
 
                 if( update ){
@@ -770,36 +844,53 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
 
-                save:  function(post, location, lat, lng, authId, userId )
-                {
-                    if( post != '' ){
-                        var data = {
-                            post: post,
-                            location: location,
-                            latitude: lat,
-                            longitude: lng,
-                            authId: authId,
-                            userId: userId
-                        };
-                        var deferred = $q.defer();
-                        $http.post( '/api/posts', data )
-                            .success( function( response )
-                            {
-                                deferred.resolve( response );
-                            } )
-                            .error( function()
-                            {
-                                deferred.reject();
-                            } );
+            save:  function(post, location, lat, lng, authId, userId )
+            {
+                if( post != '' ){
+                    var data = {
+                        post: post,
+                        location: location,
+                        latitude: lat,
+                        longitude: lng,
+                        authId: authId,
+                        userId: userId
+                    };
+                    var deferred = $q.defer();
+                    $http.post( '/api/posts', data )
+                        .success( function( response )
+                        {
+                            deferred.resolve( response );
+                        } )
+                        .error( function()
+                        {
+                            deferred.reject();
+                        } );
 
-                        return deferred.promise;
-                    }
-                },
+                    return deferred.promise;
+                }
+            },
 
             getPosts:  function( perPage, current, authid, userId )
             {
                 var deferred = $q.defer();
                 $http.get( '/api/posts', { params: {per_page: perPage, current: current, authid: authid, userId: userId }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            like: function( authId, postId, status )
+            {
+                var deferred = $q.defer();
+                $http.post( '/api/posts/like', { params: { authId: authId, postId: postId, status: status }})
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -918,7 +1009,8 @@ user.controller( 'InvitationController', [ 'UserService', '$scope', function ( U
     });
 
 }]);
-user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', function ( UserService, MessageService, $scope, $rootScope ) {
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state', 'ngDialog',
+    function ( UserService, MessageService, $scope, $rootScope, $state, ngDialog ) {
 
     $scope.user = null;
     $scope.disabled = true;
@@ -930,7 +1022,7 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
     $scope.init = function (authId, userId) {
         $rootScope.authId = authId;
         $rootScope.userId = userId;
-
+        $state.go('posts');
         var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( userId, details ).then( function( response )
         {
@@ -951,6 +1043,10 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
     $scope.checkMessageBody = function () {
         $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
+
+    // $scope.ngMessage = function () {
+    //     ngDialog.open({ template: '/api/view/modules.messages.api.dialog', className: 'ngdialog-theme-default' });
+    // };
     
 }]);
 user.controller( 'UserEditController', [ 'UserService', '$scope', function ( UserService, $scope ) {
@@ -1124,6 +1220,19 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
         };
         return UserService;
     }] );
+app.directive('map', function () {
+    return {
+        link: function(scope, elem, attrs) {
+            var div= $('<div/>', { id: 'map_' + attrs.id });
+            $(elem).append( div );
+            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
+                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
+                zoom: 13,
+                mapTypeId: 'roadmap'
+            });
+        }
+    }
+});
 app.factory('SocketFactory', function ($rootScope) {
     var socket = io('http://localhost:3000');
     return {
@@ -1155,18 +1264,5 @@ app.factory('SocketFactory', function ($rootScope) {
             });
         }
     };
-});
-app.directive('map', function () {
-    return {
-        link: function(scope, elem, attrs) {
-            var div= $('<div/>', { id: 'map_' + attrs.id });
-            $(elem).append( div );
-            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
-                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
-                zoom: 13,
-                mapTypeId: 'roadmap'
-            });
-        }
-    }
 });
 //# sourceMappingURL=all.js.map

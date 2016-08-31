@@ -46,7 +46,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
             ->orWhere(function ($query) use ($ids) {
                 $query->whereIn('sender_id', $ids );
                     })
-            ->with( 'senders', 'receivers', 'location' )
+            ->with( 'senders', 'receivers', 'location', 'likes.user' )
             ->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page);
 
         return $data;
