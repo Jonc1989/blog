@@ -45,10 +45,27 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             },
 
-            like: function( authId, postId, status )
+            like: function( authId, postId, status, type )
             {
                 var deferred = $q.defer();
-                $http.post( '/api/posts/like', { params: { authId: authId, postId: postId, status: status }})
+                $http.post( '/api/posts/like', { params: { authId: authId, postId: postId, status: status, type: type }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getLikes: function( postId )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/posts/likes', { params: { postId: postId }})
                     .success( function( response )
                     {
                         deferred.resolve( response );

@@ -3,7 +3,7 @@
     <div class="col-md-4 clear-pads" ng-repeat="item in galleryData">
         <div class="gallery">
             <a href="">
-                <div class="images" ng-repeat="image in item.files | limitTo:4">
+                <div class="images" ng-repeat="image in item.images | limitTo:4">
                     <img ng-src="/image/{{item.user.id}}/{{item.id}}/{{image.file_name}}">
                 </div>
             </a>

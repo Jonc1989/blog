@@ -3,6 +3,7 @@
 namespace App\Modules\Users\Controllers\api;
 
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
+use App\Modules\Users\Repositories\VisitorRepositoryInterface;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests;
@@ -14,9 +15,10 @@ class UserController extends ApiController
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user )
+    public function __construct( UsersRepositoryInterface $user, VisitorRepositoryInterface $visitors )
     {
         $this->user = $user;
+        $this->visitors = $visitors;
 
     }
 
@@ -112,5 +114,10 @@ class UserController extends ApiController
     {
         count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
         return $this->user->onlineUsers( $fields );
+    }
+    
+    public function guests( $id )
+    {
+        return $this->respond( $this->visitors->allGuests( $id ) );
     }
 }

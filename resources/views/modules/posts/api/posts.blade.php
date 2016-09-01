@@ -51,7 +51,7 @@
         <div ng-if="post.location.latitude && post.location.longitude" class="col-md-12" id="map_wrap_{{post.id}}">
             <map ng-attr-id="{{ post.id }}" ng-attr-latitude="{{ post.location.latitude }}" ng-attr-longitude="{{ post.location.longitude }}"></map>
         </div>
-        <like likes="{{post.likes}}" auth-id="<?= \Auth::id() ?>" post-id="{{post.id}}"></like>
+        <like likes="post.likes" auth-id="<?= \Auth::id() ?>" post-id="{{post.id}}" type="'post'"></like>
     </div>
     <div class="loader-wrap" style="position: relative" ng-class="{ hidden : !loading}">Loading</div>
 

@@ -19,23 +19,26 @@ class LikeController extends ApiController
         $this->likes = $likes;
     }
 
+    public function getLikes()
+    {
+        $postId = Input::get('postId');
+        return $this->respond( $this->likes->getLikes( $postId ) );
+    }
+    
     public function like()
     {
-        \Log::info(Input::get('params.status'));
         $authId = Input::get('params.authId');
         $postId = Input::get('params.postId');
         $status = Input::get('params.status');
+        $type = Input::get('params.type');
 
         if( $status == 'true' ){
-            $response = $this->likes
-                
-                ->where( 'user_id', $authId )
-                ->where( 'post_id', $postId )
-                ->delete();
+            $response = $this->likes->deleteLike( $authId, $postId, $type );
         }else{
             $response = $this->likes->create([
                 'user_id'       => $authId,
-                'post_id'       => $postId
+                'post_id'       => $postId,
+                'type'       => $type
             ]);
         }
 

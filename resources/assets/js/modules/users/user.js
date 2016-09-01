@@ -21,5 +21,10 @@ var user = angular.module('users', [ ])
                 params: {
                     id: null
                 }
+            })
+            .state('visitors', {
+                url: "/visitors",
+                templateUrl: "/api/view/modules.users.api.visitors",
+                controller: "VisitorController"
             });
     }]);

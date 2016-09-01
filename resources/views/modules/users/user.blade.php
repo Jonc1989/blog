@@ -24,7 +24,7 @@
                     <div ng-bind="'E-pasts: ' + user.email"></div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-6" ng-if="<?= \Auth::user()->id != $id ?>">
                     <invitation friendid="<?= $id ?>" myid="<?= Auth::user()->id ?>"></invitation>
 
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#sendMessage">
@@ -65,6 +65,7 @@
                         <div class="panel-heading">
                             <a ui-sref="posts({ id: <?= $id ?>})">Posts</a>
                             <a ui-sref="friends({ id: <?= $id ?>})">Friends</a>
+                            <a ng-if="<?= \Auth::user()->id == $id ?>" ui-sref="visitors">Viesi</a>
                         </div>
                         <div class="panel-body">
 

@@ -12,7 +12,7 @@ class Likes extends Model {
      *
      * @var array
      */
-    protected $fillable = [ 'id', 'user_id', 'post_id', 'created_at', 'updated_at' ];
+    protected $fillable = [ 'id', 'user_id', 'post_id', 'type', 'created_at', 'updated_at' ];
 
     public function user()
     {

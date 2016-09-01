@@ -3,7 +3,7 @@
 namespace App\Modules\Galleries\Controllers\api;
 
 use App\Http\Controllers\ApiController;
-use App\Modules\Galleries\Repositories\FileRepositoryInterface;
+use App\Modules\Galleries\Repositories\ImageRepositoryInterface;
 use Illuminate\Support\Facades\Input;
 use App\Http\Requests;
 use App\Modules\Galleries\Repositories\GalleryRepositoryInterface;
@@ -17,10 +17,10 @@ class GalleryController extends ApiController
      *
      * @return void
      */
-    public function __construct( GalleryRepositoryInterface $gallery, FileRepositoryInterface $files )
+    public function __construct( GalleryRepositoryInterface $gallery, ImageRepositoryInterface $images )
     {
         $this->gallery = $gallery;
-        $this->files = $files;
+        $this->images = $images;
     }
 
     /**
@@ -80,7 +80,7 @@ class GalleryController extends ApiController
                         //                $manager->make($path.$imageName)->resize( (228 * $index), 228 )
                         //                    ->crop(228, 228)->save($thumb_path . $imageName);
 
-                        $data = $this->files->create([
+                        $data = $this->images->create([
                             'file_name'      => $imageName,
                             'thumb'         => $imageName,
                             'original_name' => $file->getClientOriginalName(),
@@ -144,9 +144,6 @@ class GalleryController extends ApiController
 
     public function read( $user_id, $gallery, $id )
     {
-   \Log::info( $id );
-        //$file = $this->files->find( $id );
-
         $response = Response::make( \File::get( storage_path() . '/users/' . $user_id . '/galleries/' . $gallery . '/' . $id ), 200 );
         $response->header("Content-Type", 'image/jpeg');
         return $response;

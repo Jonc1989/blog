@@ -26,7 +26,7 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
             }
         }
             
-        return $this->model->with( 'files', 'user' )->whereIn( 'user_id', $ids )->get();
+        return $this->model->with( 'images', 'user' )->whereIn( 'user_id', $ids )->get();
     }
 
     public function saveName( $name )
@@ -40,7 +40,7 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
 
     public function gallery( $id )
     {
-        return $this->model->with('files', 'user' )->find($id);
+        return $this->model->with('images', 'user' )->find($id);
 
     }
 

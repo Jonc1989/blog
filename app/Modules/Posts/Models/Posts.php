@@ -29,9 +29,9 @@ class Posts extends Model {
         return $this->belongsTo('App\Modules\Users\Models\User', 'receiver_id');
     }
 
-    public function files()
+    public function images()
     {
-        return $this->hasMany('App\Modules\Galleries\Models\Files', 'post_id');
+        return $this->hasMany('App\Modules\Galleries\Models\Images', 'post_id');
     }
 
     public function location()

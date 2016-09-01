@@ -33,5 +33,8 @@ class UsersServiceProvider extends ModuleServiceProvider
 
         $this->app->bind('App\Modules\Users\Repositories\UsersRepositoryInterface',
             'App\Modules\Users\Repositories\UsersRepository');
+
+        $this->app->bind('App\Modules\Users\Repositories\VisitorRepositoryInterface',
+            'App\Modules\Users\Repositories\VisitorRepository');
     }
 }

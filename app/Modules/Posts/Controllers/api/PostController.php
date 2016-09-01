@@ -7,7 +7,7 @@ use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use App\Modules\Posts\Repositories\PostRepositoryInterface;
-use App\Modules\Galleries\Repositories\FileRepositoryInterface;
+use App\Modules\Galleries\Repositories\ImageRepositoryInterface;
 class PostController extends ApiController
 {
     /**
@@ -15,11 +15,11 @@ class PostController extends ApiController
      *
      * @return void
      */
-    public function __construct( PostRepositoryInterface $posts, FileRepositoryInterface $files )
+    public function __construct( PostRepositoryInterface $posts, ImageRepositoryInterface $images )
     {
         //$this->middleware('auth');
         $this->posts = $posts;
-        $this->files = $files;
+        $this->images = $images;
     }
 
     /**
@@ -131,7 +131,7 @@ class PostController extends ApiController
 //                $manager->make($path.$imageName)->resize( (228 * $index), 228 )
 //                    ->crop(228, 228)->save($thumb_path . $imageName);
 
-                $data = $this->files->create([
+                $data = $this->images->create([
                     'file_name'      => $imageName,
                     'thumb'         => $imageName,
                     'original_name' => $file->getClientOriginalName(),

@@ -14,6 +14,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get( 'users/search/{key}', 'App\Modules\Users\Controllers\api\UserController@search' );
 
+        Route::get( 'users/{id}/guests', 'App\Modules\Users\Controllers\api\UserController@guests' );
+
     });
 
 });

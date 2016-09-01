@@ -144,6 +144,22 @@ user.service( 'UserService', ['$http', '$q', function( $http, $q )
 
                 return deferred.promise;
 
+            },
+            getGuests:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/guests')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
             }
         };
         return UserService;

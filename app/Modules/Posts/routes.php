@@ -8,6 +8,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::resource('/save-file', 'App\Modules\Posts\Controllers\api\PostController@save_file');
 
+        Route::get('/likes', 'App\Modules\Common\Controllers\LikeController@getLikes');
+        
         Route::post('/like', 'App\Modules\Common\Controllers\LikeController@like');
         
     });
