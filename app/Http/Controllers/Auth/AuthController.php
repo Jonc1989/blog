@@ -7,8 +7,6 @@ use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
-use Laravel\Socialite\Contracts\Factory as Socialite;
-use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -37,10 +35,9 @@ class AuthController extends Controller
      *
      * @return void
      */
-    public function __construct( Socialite $socialite )
+    public function __construct()
     {
         $this->middleware($this->guestMiddleware(), ['except' => 'logout']);
-        $this->socialite = $socialite;
     }
 
     /**
@@ -73,23 +70,28 @@ class AuthController extends Controller
         ]);
     }
 
-    public function getSocialAuth($provider=null)
-    {
-        if(!config("services.$provider")) abort('404'); //just to handle providers that doesn't exist
-
-        return $this->socialite->with($provider)->redirect();
-    }
-
-
-    public function getSocialAuthCallback( /*Request $request*/ $provider=null)
-    {
-        $user = $this->socialite->with('facebook')->user();
-        \AuthenticatesUsers::login($user, true);
-        return redirect('/');
-//        if($user = $this->socialite->with($provider)->user()){
-//            dd($user);
-//        }else{
-//            return 'something went wrong';
-//        }
-    }
+//    public function getSocialAuth($provider=null)
+//    {
+//        if(!config("services.$provider")) abort('404'); //just to handle providers that doesn't exist
+//
+//        return $this->socialite->with($provider)->redirect();
+//    }
+//
+//
+//    public function getSocialAuthCallback( /*Request $request*/ $provider=null)
+//    {
+//        $user = $this->findByUsernameOrCreate( $this->socialite->with('facebook')->user() );
+//        Auth::login($user, true);
+//        return redirect('/');
+//
+//    }
+//
+//    public function findByUsernameOrCreate( $user )
+//    {
+//        return User::firstOrCreate([
+//            'name'      => $user->name,
+//            'email'     => $user->email,
+//            'photo'     => $user->avatar
+//        ]);
+//    }
 }

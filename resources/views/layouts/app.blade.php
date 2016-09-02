@@ -39,19 +39,20 @@
                     <span class="icon-bar"></span>
                 </button>
 
-                <!-- Branding Image -->
+                @if (!Auth::guest())
                 <a class="navbar-brand" href="<?= url('/') ?>">
                     Laravel
                 </a>
+                @endif
             </div>
 
             <div class="collapse navbar-collapse" id="app-navbar-collapse">
-                <!-- Left Side Of Navbar -->
+                @if (!Auth::guest())
                 <ul class="nav navbar-nav">
                     <li><a href="/messages">Vēstules</a></li>
                     <li><a href="/galleries">Galerijas</a></li>
                 </ul>
-
+                @endif
                 <!-- Right Side Of Navbar -->
                 <ul class="nav navbar-nav navbar-right">
                     <!-- Authentication Links -->
@@ -154,7 +155,13 @@
         }*/
     </script>
 
-
+    <script type="text/javascript">
+//        $.ajaxSetup({
+//            headers: {
+//                'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+//            }
+//        });
+    </script>
     <!--<fb:login-button onlogin="testAPI();">
     </fb:login-button>
 

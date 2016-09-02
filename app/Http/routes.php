@@ -13,16 +13,17 @@
 
 //Artisan::call( 'run:project' );
 
-Route::group( [ 'prefix' => '/api' ], function ()
-{
-    Route::get( 'view/{url}', 'Http\Controllers\ApiViewController@render' );
+
+
+Route::group(['middleware' => ['web']], function () {
+
+    Route::group( [ 'prefix' => '/api' ], function ()
+    {
+        Route::get( 'view/{url}', 'Http\Controllers\ApiViewController@render' );
+    });
+
+    Route::auth();
+
+    Route::get('/', 'Modules\HomeController@index');
+    
 });
-
-Route::auth();
-
-Route::get('/', 'Modules\HomeController@index');
-
-Route::get('/login/{provider?}', 'Http\Controllers\Auth\AuthController@getSocialAuth' );
-
-
-Route::get('/callback/{provider?}', 'Http\Controllers\Auth\AuthController@getSocialAuthCallback' );
