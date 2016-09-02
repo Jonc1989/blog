@@ -34,7 +34,7 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
         {
             $scope.messages = response;
 
-            console.log( $scope.messages );
+
         });
     };
 
@@ -43,7 +43,7 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
         $scope.message.messageText = $scope.messageBody;
         $scope.message.receiver = $scope.friendId;
 
-        MessageService.send($scope.message).then(function(response){
+        MessageService.send( $scope.message ).then(function(response){
             $scope.messageBody = "";
             $scope.getMessagesFromUser( $scope.friendId );
         });

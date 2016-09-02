@@ -1,5 +1,5 @@
-user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state', 'ngDialog',
-    function ( UserService, MessageService, $scope, $rootScope, $state, ngDialog ) {
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state',
+    function ( UserService, MessageService, $scope, $rootScope, $state ) {
 
     $scope.user = null;
     $scope.disabled = true;
@@ -12,6 +12,7 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
         $rootScope.authId = authId;
         $rootScope.userId = userId;
         $state.go('posts');
+
         var details = [ 'id', 'name', 'surname', 'photo' ];
         UserService.getUser( userId, details ).then( function( response )
         {
@@ -21,7 +22,7 @@ user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', 
 
     $scope.sendMessage = function()
     {
-        $scope.message.messageText = $scope.messageBody;
+        $scope.message.messageText = $scope.messageBody;        console.log( $scope.message );
         $scope.message.receiver = $scope.user.id;
 
         MessageService.send($scope.message).then(function(response){

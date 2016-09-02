@@ -24,7 +24,7 @@ elixir(function(mix) {
         .scripts([
             //'../../../node_modules/bootstrap-sass/assets/javascripts/bootstrap.min.js',
             //'../../../node_modules/ngcomponentrouter/angular_1_router.js',
-            //'../../../node_modules/ng-dialog/js/ngDialog.min.js'
+            '../../../node_modules/ng-toast/dist/ngToast.min.js'
         ],
         'public/js/vendor/core.js');
 });
