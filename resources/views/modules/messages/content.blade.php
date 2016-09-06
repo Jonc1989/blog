@@ -11,6 +11,20 @@
     </div>
 
     <div class="">
+        <div ng-show="userSearchOpen">
+            <input type="text" class="form-control" ng-model="searchKey" ng-change="search()" ng-blur="hideSearchResults()" ng-focus="showSearchResults()"/>
+            <div id="search-results" style="background: whitesmoke;position: absolute;">
+                <div ng-repeat="user in searchResults" ng-click="selectUser(user)">
+                    <span ng-bind="user.name"></span><span ng-bind="user.surname"></span>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
         <textarea class="form-control" placeholder="Sper vaļā..." rows="3" ng-model="messageBody" ng-change="checkMessageBody()"></textarea>
     </div>
     <div class="">

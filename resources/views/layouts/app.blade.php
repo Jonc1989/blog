@@ -15,6 +15,7 @@
     <link href="/css/app.css" rel="stylesheet">
     <link href="/css/ngToast.min.css" rel="stylesheet">
     <link href="/css/ngToast-animations.min.css" rel="stylesheet">
+    <!--<link href="/css/tokenize2.min.css" rel="stylesheet" />-->
     <style>
         body {
             font-family: 'Lato';
@@ -89,7 +90,7 @@
     </div>
 
     <!-- JavaScripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js" integrity="sha384-I6F5OKECLVtK/BL+8iSLDEHowSAfUo76ZL9+kGAgTRdiByINKJaqTPH/QVNS1VDb" crossorigin="anonymous"></script>
+    <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/lodash/4.14.2/lodash.min.js"></script>
@@ -102,6 +103,7 @@
     <script src="/js/vendor/ng-file-upload-shim.min.js"></script> <!-- for no html5 browsers support -->
     <script src="/js/vendor/ng-file-upload.min.js"></script>
     <script src="/js/vendor/core.js"></script>
+    <!--<script src="/js/vendor/tokenize2.min.js"></script>-->
     <script src="/js/all.js"></script>
     <script>
         /*(function(d, s, id) {

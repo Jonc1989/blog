@@ -1,6 +1,7 @@
-messages.controller('MessagesController', ['$scope', 'MessageService', function ( $scope, MessageService ) {
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
 
     $scope.friendId = null;
+    $scope.userSearchOpen = false;
     $scope.messages = {};
     $scope.users = {};
     $scope.disabled = true;
@@ -8,6 +9,9 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
         messageText: "",
         receiver: ""
     };
+    $scope.receivers = [];
+    $scope.searchKey = '';
+    $scope.searchResults = [];
 
     this.$onInit = function () {
         $scope.messangers();
@@ -46,11 +50,50 @@ messages.controller('MessagesController', ['$scope', 'MessageService', function 
         MessageService.send( $scope.message ).then(function(response){
             $scope.messageBody = "";
             $scope.getMessagesFromUser( $scope.friendId );
+            $scope.userSearchOpen = false;
         });
     };
 
     $scope.checkMessageBody = function () {
         $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
     };
+    
+    $scope.newMessage = function () {
+        $scope.userSearchOpen = true;
+        $scope.friendId = undefined;
+        $scope.messages = {};
+    }
+
+
+
+    $scope.search = function()
+    {                console.log( $scope.searchKey);
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+
+    $scope.selectUser = function( user )
+    {
+        $scope.searchKey = user.name + ' ' + user.surname;
+        $scope.friendId = user.id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
     
 }]);
