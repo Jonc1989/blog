@@ -15,7 +15,6 @@
     <link href="/css/app.css" rel="stylesheet">
     <link href="/css/ngToast.min.css" rel="stylesheet">
     <link href="/css/ngToast-animations.min.css" rel="stylesheet">
-    <!--<link href="/css/tokenize2.min.css" rel="stylesheet" />-->
     <style>
         body {
             font-family: 'Lato';
@@ -53,7 +52,7 @@
             <div class="collapse navbar-collapse" id="app-navbar-collapse">
                 @if (!Auth::guest())
                 <ul class="nav navbar-nav">
-                    <li><a href="/messages">Vēstules</a></li>
+                    <li><a href="/messages">Vēstules<span><?= count(1)?></span></a></li>
                     <li><a href="/galleries">Galerijas</a></li>
                 </ul>
                 @endif
@@ -99,81 +98,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0/angular-animate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.min.js"></script>
     <script src='//maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCF3IrXpem5Lcg-jrIGr-JPLuATMs2str8&libraries=places'></script>
-
     <script src="/js/vendor/ng-file-upload-shim.min.js"></script> <!-- for no html5 browsers support -->
     <script src="/js/vendor/ng-file-upload.min.js"></script>
     <script src="/js/vendor/core.js"></script>
-    <!--<script src="/js/vendor/tokenize2.min.js"></script>-->
     <script src="/js/all.js"></script>
-    <script>
-        /*(function(d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s); js.id = id;
-            js.src = "//connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));*/
-    </script>
-
-    <script>
-        /*function statusChangeCallback(response) {
-            console.log('statusChangeCallback');
-            console.log(response);
-
-            if (response.status === 'connected') {
-                testAPI();
-            } else if (response.status === 'not_authorized') {
-                document.getElementById('status').innerHTML = 'Please log ' + 'into this app.';
-            } else {
-                document.getElementById('status').innerHTML = 'Please log ' + 'into Facebook.';
-            }
-        }
-
-        function checkLoginState() {
-            FB.getLoginStatus(function(response) {
-                statusChangeCallback(response);
-            });
-        }
-
-        FB.logout(function(response) {
-            // user is now logged out
-        });
-        window.fbAsyncInit = function() {
-            FB.init({
-                appId      : '1441360066123251',
-                cookie     : true,  // enable cookies to allow the server to access
-                                    // the session
-                xfbml      : true,  // parse social plugins on this page
-                version    : 'v2.1' // use graph api version 2.5
-            });
-
-            FB.getLoginStatus(function(response) {
-                statusChangeCallback(response);
-            });
-
-        };
-
-        function testAPI() {
-            console.log('Welcome!  Fetching your information.... ');
-            FB.api('/me', function(response) {
-                console.log(response);
-                document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '!';
-            });
-        }*/
-    </script>
-
-    <script type="text/javascript">
-//        $.ajaxSetup({
-//            headers: {
-//                'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
-//            }
-//        });
-    </script>
-    <!--<fb:login-button onlogin="testAPI();">
-    </fb:login-button>
-
-    <div id="status">
-    </div>-->
 
 </body>
 </html>

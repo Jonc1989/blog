@@ -15,7 +15,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
 
     public function posts( $per_page, $current_page, $authId, $userId )
     {
-
+        \DB::enableQueryLog();
         $ids = [];
         if( $userId == '' ) {
 
@@ -48,7 +48,7 @@ class PostRepository extends Repository implements PostRepositoryInterface
                     })
             ->with( 'senders', 'receivers', 'location', 'likes.user' )
             ->orderBy('updated_at', 'DESC')->paginate($per_page, ['*'], '', $current_page);
-
+        //\Log::info(   \DB::getQueryLog() );
         return $data;
     }
 

@@ -76,4 +76,11 @@ textarea {
 .like-count {
   display: inline-block; }
 
+#messages-wrap {
+  max-height: 200px;
+  overflow: auto; }
+
+.unreaded {
+  background: aliceblue; }
+
 /*# sourceMappingURL=app.css.map */

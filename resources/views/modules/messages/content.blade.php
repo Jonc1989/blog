@@ -1,14 +1,17 @@
 <div class="col-md-12">
-    <div ng-repeat="message in messages.data">
-        <div>
-            <span ng-bind=" friendId = message.receiver_id ? message.senders.name + ' ' + message.senders.surname : message.receivers.name + ' ' + message.receivers.surname "></span>
-            <span ng-bind="message.created_at" class="pull-right"></span>
-        </div>
-        <div>
-            <span ng-bind="message.text"></span>
+    <div id="messages-wrap">
+        <div ng-repeat="message in messages.data"  scroll parent="messages-wrap" readed="{{ message.readed }}" ng-class="{unreaded: readed}">
+            <div>
+                <span ng-bind=" friendId = message.receiver_id ? message.senders.name + ' ' + message.senders.surname : message.receivers.name + ' ' + message.receivers.surname "></span>
+                <span ng-bind="message.created_at" class="pull-right"></span>
+            </div>
+            <div>
+                <span ng-bind="message.text"></span>
 
+            </div>
         </div>
     </div>
+
 
     <div class="">
         <div ng-show="userSearchOpen">

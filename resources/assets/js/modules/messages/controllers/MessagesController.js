@@ -95,5 +95,12 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     $scope.showSearchResults = function () {
         $('#search-results').show();
     }
+
+    //$(window).scroll(function() {
+
+
+
+    //});
+
     
 }]);

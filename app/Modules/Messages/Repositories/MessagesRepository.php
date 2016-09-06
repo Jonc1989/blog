@@ -13,19 +13,23 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
 
     public function messengers()
     {
-        return $this->model->join('users', function ($join){
+        //DB::enableQueryLog();
+        $data = $this->model->join('users', function ($join){
             $join->on( 'users.id', '=', 'messages.sender_id')
                 ->where( 'messages.receiver_id', '=', \Auth::user()->id )
                 ->orOn( 'users.id', '=', 'messages.receiver_id')
                 ->where( 'messages.sender_id', '=', \Auth::user()->id );
             })
-            ->orderBy( 'messages.created_at', 'desc' )
+            ->orderBy( 'messages.updated_at', 'desc' )
             ->select(
             'users.id',
             'users.name',
             'users.surname'
             )
-            ->groupby('users.id')->paginate();
+            ->groupby('users.id')
+            ->paginate();
+
+        return $data;
     }
 
     public function messages( $id )

@@ -38,6 +38,6 @@ class RunProject extends Command
      */
     public function handle()
     {
-        Log::info( 'Cron working!' );
+//        Log::info( 'Cron working!' );
     }
 }

@@ -1,6 +1,6 @@
 home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
     $scope.users = [];
-    $scope.details = ['name', 'surname', 'photo'];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
 
     $scope.animationColors = [
         'success',
