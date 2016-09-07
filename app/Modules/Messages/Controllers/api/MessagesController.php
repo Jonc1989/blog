@@ -92,7 +92,13 @@ class MessagesController extends ApiController {
 	 */
 	public function update($id)
 	{
-		//
+		//\Log::info(Input::all());
+//		$data = [
+//			'readed'    > Input::get( 'readed' )
+//		];
+
+		$data = Input::all();
+		return $this->respondUpdated( null, $this->message->update( $data, $id ) );
 	}
 
 	/**

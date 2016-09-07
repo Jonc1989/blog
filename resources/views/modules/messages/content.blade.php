@@ -1,14 +1,18 @@
 <div class="col-md-12">
     <div id="messages-wrap">
-        <div ng-repeat="message in messages.data"  scroll parent="messages-wrap" readed="{{ message.readed }}" ng-class="{unreaded: readed}">
+        <div ng-repeat="message in messages.data"
+             scroll
+             id="msg_{{message.id}}"
+             parent="messages-wrap"
+             message="message"
+             auth-id="<?= \Auth::id() ?>"
+             ng-class="{'unreaded': message.readed == 0 && <?= \Auth::id() ?> !=  message.sender_id}">
             <div>
                 <span ng-bind=" friendId = message.receiver_id ? message.senders.name + ' ' + message.senders.surname : message.receivers.name + ' ' + message.receivers.surname "></span>
                 <span ng-bind="message.created_at" class="pull-right"></span>
             </div>
-            <div>
-                <span ng-bind="message.text"></span>
-
-            </div>
+            <div ng-if="<?= \Auth::id() ?> == message.sender_id && message.readed == 0" class="pull-right">nelasīta</div>
+            <div  ng-bind="message.text"></div>
         </div>
     </div>
 
