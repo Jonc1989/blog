@@ -4,6 +4,8 @@ var Redis = require('ioredis');
 var redis = new Redis();
 redis.subscribe('post-added');
 redis.subscribe('user-online');
+redis.subscribe('message-sent');
+redis.subscribe('message-readed');
 redis.on('message', function ( channel, message ) {
 console.log( channel );
     console.log( message );

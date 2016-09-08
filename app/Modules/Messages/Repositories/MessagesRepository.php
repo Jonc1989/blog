@@ -60,8 +60,14 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
             ->paginate();
 
 //        \Log::info( DB::getQueryLog() );
-   
-        
+    }
+    
+    public function getNewMessagesCount( $id )
+    {
+        return $this->model
+            ->where( 'receiver_id', '=', $id )
+            ->where( 'readed', 0 )
+            ->count();
     }
 }
 

@@ -33,6 +33,7 @@
 
 
         <textarea class="form-control" placeholder="Sper vaļā..." rows="3" ng-model="messageBody" ng-change="checkMessageBody()"></textarea>
+        <?= csrf_field() ?>
     </div>
     <div class="">
         <button type="button" ng-disabled="disabled" class="btn btn-primary" ng-click="sendMessage()">Sūtīt</button>

@@ -2,7 +2,8 @@
 
 use App\Http\Requests;
 use App\Http\Controllers\ApiController;
-//use App\Http\Requests\Messages\MessageStoreRequest;
+use App\Modules\Messages\Events\MessageSent;
+use App\Modules\Messages\Events\MessageReaded;
 use App\Modules\Messages\Repositories\MessagesRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
@@ -55,8 +56,10 @@ class MessagesController extends ApiController {
 				'readed'		=> 0,
 				'answered'		=> 0
             ];
-
-            return $this->respondCreated( null, $this->message->create($data) );
+			
+            $response =  $this->respondCreated( null, $this->message->create($data) );
+	        event( new MessageSent( $receiver ));
+	        return $response;
         }
 
 
@@ -92,13 +95,11 @@ class MessagesController extends ApiController {
 	 */
 	public function update($id)
 	{
-		//\Log::info(Input::all());
-//		$data = [
-//			'readed'    > Input::get( 'readed' )
-//		];
-
 		$data = Input::all();
-		return $this->respondUpdated( null, $this->message->update( $data, $id ) );
+		$response = $this->respondUpdated( null, $this->message->update( $data, $id ) );
+		$message = $this->message->find( $id );
+		event( new MessageReaded( $message->receiver_id ));
+		return $response;
 	}
 
 	/**
@@ -115,6 +116,11 @@ class MessagesController extends ApiController {
 	public function messengers()
 	{
 		return $this->respond( $this->message->messengers() );
+	}
+	
+	public function getNewMessageCount( $id )
+	{
+		return $this->respond( $this->message->getNewMessagesCount( $id ));
 	}
 
 }

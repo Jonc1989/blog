@@ -15,10 +15,10 @@ elixir(function(mix) {
     mix.sass('app.scss')
         .scripts([
             '*.js',
-            'modules/**/*.js',
-            'modules/**/**/*.js',
-            'directives/*.js',
-            'services/*.js',
+            '**/**/*.js',
+            '**/**/**/*.js',
+           // 'directives/*.js',
+            '**/*.js',
 
         ])
         .scripts([

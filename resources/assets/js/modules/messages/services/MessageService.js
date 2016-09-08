@@ -84,7 +84,27 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
 
                 return deferred.promise;
             },
-            
+            getNewMessages: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/new-messages/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
             
             
             

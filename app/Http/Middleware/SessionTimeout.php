@@ -27,7 +27,7 @@ class SessionTimeout
             $this->session->put('lastActivityTime', time());
         elseif(time() - $this->session->get('lastActivityTime') > $this->timeout){
             $this->session->forget('lastActivityTime');
-            $cookie = cookie('intend', $isLoggedIn ? url()->current() : 'dashboard');
+            $cookie = cookie('intend', $isLoggedIn ? url()->current() : '/');
             $email = $request->user()->email;
             //auth()->logout();
             $this->event->fire( 'user.logout', [ \Auth::user() ] );
