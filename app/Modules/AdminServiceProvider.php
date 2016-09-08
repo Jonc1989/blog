@@ -21,12 +21,13 @@ class AdminServiceProvider extends ServiceProvider
     public function register()
     {
         $modules = [
-            'Users',
-            'Messages',
+            'Comments',
+            'Common',
+            'Friends', 
             'Galleries',
-            'Friends',
+            'Messages',
             'Posts',
-            'Common'
+            'Users',
         ];
 
         foreach ( $modules as $module )

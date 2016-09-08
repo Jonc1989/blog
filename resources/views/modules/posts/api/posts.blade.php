@@ -52,6 +52,7 @@
             <map ng-attr-id="{{ post.id }}" ng-attr-latitude="{{ post.location.latitude }}" ng-attr-longitude="{{ post.location.longitude }}"></map>
         </div>
         <like likes="post.likes" auth-id="<?= \Auth::id() ?>" post-id="{{post.id}}" type="'post'"></like>
+        <comments post-id="post.id" user-id="<?= \Auth::id() ?>" type="'post'"></comments>
     </div>
     <div class="loader-wrap" style="position: relative" ng-class="{ hidden : !loading}">Loading</div>
 

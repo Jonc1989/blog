@@ -187,6 +187,37 @@ th {
   top: 50%;
   width: 95%; }
 
+.comments {
+  background: aliceblue; }
+
+.cube {
+  height: 30px;
+  background: antiquewhite;
+  text-align: center;
+  line-height: 30px;
+  width: 100px;
+  overflow: hidden; }
+
+.sleeping {
+  height: 0px; }
+
+.cube-wrap:hover .cube {
+  height: 0px; }
+
+.cube-wrap:hover .sleeping {
+  height: 30px;
+  background: antiquewhite;
+  text-align: center;
+  line-height: 30px; }
+
+.cube {
+  transition: all .3s; }
+
+.close-input {
+  position: absolute;
+  top: 6px;
+  right: 10px; }
+
 html, body {
   height: 100%; }
 

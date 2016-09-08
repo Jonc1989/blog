@@ -8,5 +8,6 @@ var app = angular.module( 'app', [
     'users',
     'messages',
     'galleries',
+    'comments',
     'ngToast'
 ] );

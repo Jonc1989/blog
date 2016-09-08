@@ -8,16 +8,10 @@ var app = angular.module( 'app', [
     'users',
     'messages',
     'galleries',
+    'comments',
     'ngToast'
 ] );
 
-app.component( 'menuComponent', {
-    templateUrl: '/api/view/layouts.api.menu',
-    controller: 'MenuController',
-    bindings: {
-        authId: '<'
-    }
-})
 app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', function( $scope, SocketFactory, MessageService ) {
 
     $scope.authId = null;
@@ -45,6 +39,13 @@ app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', f
     }
 }]);
 
+app.component( 'menuComponent', {
+    templateUrl: '/api/view/layouts.api.menu',
+    controller: 'MenuController',
+    bindings: {
+        authId: '<'
+    }
+})
 app.directive('map', function () {
     return {
         link: function(scope, elem, attrs) {
@@ -130,6 +131,9 @@ app.factory('SocketFactory', function ($rootScope) {
         }
     };
 });
+var comments = angular.module('comments', [
+
+])
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -194,6 +198,10 @@ var messages = angular.module('messages', [
         //     });
     });
 
+var post = angular.module('posts', [
+
+]);
+
 var user = angular.module('users', [ ])
     .config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
         //
@@ -225,10 +233,114 @@ var user = angular.module('users', [ ])
             });
     }]);
 
-var post = angular.module('posts', [
+comments.component( 'comments', {
+    templateUrl: '/api/view/modules.comments.api.comments',
+    controller: 'CommentsController',
+    bindings: {
+        postId: '<',
+        userId: '<',
+        type: '<'
+    }
+})
+comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', function ( UserService, $scope, CommentsService ) {
 
-]);
+    $scope.commentBody = '';
+    $scope.comments = [];
+    this.$onInit = function () {
+        $scope.postId = this.postId;
+        $scope.userId = this.userId;
+        $scope.type = this.type;    
+        $scope.commentBody = '';
+        $scope.ready = false;
+        $scope.getComments();
+    };
 
+    $scope.comment = function () {
+        $scope.ready = true;
+    };
+
+    $scope.saveComment = function () {
+        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
+            console.log( response );
+            $scope.commentBody = '';
+        });
+    };
+    
+    $scope.close = function () {
+        $scope.ready = false;
+    };
+
+    $scope.getComments = function () {
+        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
+            $scope.comments = response.data;
+        });
+    };
+}]);
+comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
+{
+
+    var CommentsService = {
+
+       
+        save: function( postId, userId, type, comment )
+        {
+            var deferred = $q.defer();
+            var data = {
+                postId: postId, 
+                userId: userId,
+                type: type,
+                comment: comment
+            };
+            $http.post( '/api/comments/', data )
+                .success( function( response )
+                {console.log();
+                    deferred.resolve( response );
+                } )
+                .error( function( response, status )
+                {
+                    if (status === 422)
+                    {
+                        deferred.resolve({errors: response});
+                    } else
+                    {
+                        deferred.reject();
+                    }
+                } );
+
+            return deferred.promise;
+
+        },
+
+        all: function( postId, type )
+        {
+            // var params = {
+            //     postId: postId,
+            //     type: type
+            // };
+
+            var deferred = $q.defer();
+            $http.get( '/api/comments/', { params: { postId: postId, type: type } } )
+                .success( function( response )
+                {
+                    deferred.resolve( response );
+                } )
+                .error( function( response, status )
+                {
+                    if (status === 422)
+                    {
+                        deferred.resolve({errors: response});
+                    } else
+                    {
+                        deferred.reject();
+                    }
+                } );
+
+            return deferred.promise;
+
+        }
+    };
+    return CommentsService;
+}] );
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -572,6 +684,118 @@ app.component( 'search', {
     templateUrl: '/api/view/modules.home.api.search',
     controller: 'SearchController'
 })
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+
+
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
 
     $scope.friendId = null;
@@ -677,119 +901,6 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     //});
 
     
-}]);
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-    // $scope.init = function (id) {
-    //     this.id = id;
-    //    
-    // };
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    }
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
 }]);
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
@@ -933,205 +1044,6 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
-user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
-    function ( UserService, $scope, $stateParams, $rootScope ) {
-    $scope.users = [];
-
-    $scope.id = null;
-
-    this.$onInit = function () {
-        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
-        UserService.getFriends( $scope.id ).then( function( response )
-        {
-            console.log(response);
-            $scope.users = response;
-        });
-    };
-
-}]);
-user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.myId = null;
-    $scope.friendId = null;
-    $scope.friendStatus = null;
-    $scope.friendStatusText = null;
-    $scope.cancelText = null;
-
-
-    this.$onInit = function () {
-        $scope.friendId = this.friendid;
-        $scope.myId = this.myid;
-        $scope.checkStatus();
-    };
-
-    $scope.checkStatus = function () {
-        UserService.getStatus($scope.friendId).then( function ( response ) {
-            if(response.length == 0) {
-                $scope.friendStatus = 0; //nav draugi                       //action - uzaicināt
-                $scope.friendStatusText = 'Uzaicināt';
-            }else if( response[0].user_id == $scope.myId ){
-                if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 1; //uzaicinājums nosūtīts        //action - atcelt uzaicinājumu
-                    $scope.friendStatusText = 'Atcelt uzaicinājumu';
-                }else{
-                    $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
-                    $scope.friendStatusText = 'Atcelt draudzību';
-                }
-            }else /*if( response[0].friend_id == $scope.friendId )*/{
-                if( response[0].friendship == 0 ){
-                    $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
-                    $scope.cancelText = 'Atcelt uzaicinājumu';
-                    $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
-                }else{
-                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
-                    $scope.friendStatusText = 'Atcelt draudzību';
-                }
-            }
-        });
-    };
-
-    $scope.changeFriendshipStatus = function () {
-        UserService.changeStatus( $scope.friendId, $scope.friendStatus ).then( function( response )  {
-            $scope.$broadcast('friend-status-changed');
-        });
-    };
-
-    $scope.cancelFriendRequest = function () {
-        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
-            $scope.$broadcast('friend-status-changed');
-        });
-    };
-
-
-    $scope.$on('friend-status-changed', function(event, args) {
-        $scope.checkStatus();
-    });
-
-}]);
-user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state',
-    function ( UserService, MessageService, $scope, $rootScope, $state ) {
-
-    $scope.user = null;
-    
-
-    $scope.init = function (authId, userId) {
-        $rootScope.authId = authId;
-        $rootScope.userId = userId;
-        $state.go('posts');
-
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( userId, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-    
-}]);
-user.controller( 'UserEditController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.user = null;
-    $scope.disabled = true;
-
-    $scope.init = function (id) {
-
-        UserService.getUser( id ).then( function( response )
-        {
-            $scope.user = response;
-        });
-    };
-
-    $scope.saveUser = function ( ) {
-        UserService.updateUser( $scope.user.id, $scope.user ).then( function( response )
-        {
-           console.log(response);
-        });
-    }
-
-}]);
-user.controller( 'UserMessageSenderController', [ 'MessageService', '$scope', function ( MessageService, $scope ) {
-
-        $scope.userId = null;
-
-        $scope.disabled = true;
-        $scope.message = {
-            messageText: "",
-            receiver: ""
-        };
-
-        this.$onInit = function () {
-            $scope.userId = this.userId;
-        };
-
-        $scope.sendMessage = function()
-        {
-            $scope.message.messageText = $scope.messageBody;
-            $scope.message.receiver = $scope.userId;console.log( $scope.message );
-
-            MessageService.send($scope.message).then(function(response){
-                $scope.messageBody = "";
-            });
-        };
-
-        $scope.checkMessageBody = function () {
-            $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
-        };
-
-        // $scope.ngMessage = function () {
-        //     ngDialog.open({ template: '/api/view/modules.messages.api.dialog', className: 'ngdialog-theme-default' });
-        // };
-
-    }]);
-user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
-    function ( UserService, $scope, $stateParams, $rootScope ) {
-
-        $scope.guests = [];
-        $scope.id = null;
-
-        this.$onInit = function () {
-            $scope.id = $rootScope.authId;
-            UserService.getGuests( $scope.id ).then( function( response )
-            {
-                console.log(response);
-                $scope.guests = response.data;
-            });
-        };
-
-    }]);
-user.component( 'friends', {
-    templateUrl: '/api/view/modules.users.api.friends',
-    controller: 'FriendsController',
-    bindings: {
-        id: '<',
-    }
-})
-user.component( 'invitation', {
-    templateUrl: '/api/view/modules.users.api.invitation',
-    controller: 'InvitationController',
-    bindings: {
-        friendid: '<',
-        myid: '<'
-    }
-})
-user.component( 'sendMessage', {
-    templateUrl: '/api/view/modules.users.api.send_message',
-    controller: 'UserMessageSenderController',
-    bindings: {
-        userId: '<'
-    }
-})
-/**
- * Created by Admin on 16.08.2016..
- */
-app.component( 'userInfo', {
-    templateUrl: '/api/view/modules.users.api.user-info',
-    controller: 'UserController',
-    // $routeConfig: [
-    //     { path: "/", component: "posts", name: "posts", useAsDefault: true }
-    // ],
-    bindings: {
-        id: '<'
-    }
-})
 post.component( 'like', {
     templateUrl: '/api/view/modules.posts.api.like',
     controller: 'LikeController',
@@ -1149,172 +1061,6 @@ post.component( 'posts', {
         authId: '<'
     }
 })
-user.service( 'UserService', ['$http', '$q', function( $http, $q )
-    {
-
-        var UserService = {
-
-            getUser:  function( id, details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id,
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            updateUser: function ( id, user ) {
-                var deferred = $q.defer();
-                $http.put( '/api/users/' + id,
-                    {
-                        params: user
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-
-            onlineUsers:  function( details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/online',
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            getFriends:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            changeStatus: function( id, status )
-             {
-                 var deferred = $q.defer();
-                 var data = {
-                     id: id,
-                     status: status
-                 };
-                 $http.post( '/api/friends', data )
-                     .success( function( response )
-                     {
-                         deferred.resolve( response );
-                     } )
-                     .error( function()
-                     {
-                         deferred.reject();
-                     } );
-
-                 return deferred.promise;
-             },
-
-            getStatus: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friend/status/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            invitations: function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getGuests:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/guests')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return UserService;
-    }] );
 post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, PostService ) {
         
     $scope.likeStatus = false;
@@ -1584,5 +1330,370 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
             }
         };
         return PostService;
+    }] );
+user.controller( 'FriendsController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
+    function ( UserService, $scope, $stateParams, $rootScope ) {
+    $scope.users = [];
+
+    $scope.id = null;
+
+    this.$onInit = function () {
+        $stateParams.id != null ? $scope.id = $stateParams.id : $scope.id = $rootScope.userId;
+        UserService.getFriends( $scope.id ).then( function( response )
+        {
+            console.log(response);
+            $scope.users = response;
+        });
+    };
+
+}]);
+user.controller( 'InvitationController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.myId = null;
+    $scope.friendId = null;
+    $scope.friendStatus = null;
+    $scope.friendStatusText = null;
+    $scope.cancelText = null;
+
+
+    this.$onInit = function () {
+        $scope.friendId = this.friendid;
+        $scope.myId = this.myid;
+        $scope.checkStatus();
+    };
+
+    $scope.checkStatus = function () {
+        UserService.getStatus($scope.friendId).then( function ( response ) {
+            if(response.length == 0) {
+                $scope.friendStatus = 0; //nav draugi                       //action - uzaicināt
+                $scope.friendStatusText = 'Uzaicināt';
+            }else if( response[0].user_id == $scope.myId ){
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 1; //uzaicinājums nosūtīts        //action - atcelt uzaicinājumu
+                    $scope.friendStatusText = 'Atcelt uzaicinājumu';
+                }else{
+                    $scope.friendStatus = 2; //uzaicinājums apstiprināts    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
+                }
+            }else /*if( response[0].friend_id == $scope.friendId )*/{
+                if( response[0].friendship == 0 ){
+                    $scope.friendStatus = 3; //uzaicinājums saņemts         //action - apstiprināt uzaicinājumu
+                    $scope.cancelText = 'Atcelt uzaicinājumu';
+                    $scope.friendStatusText = 'Apstiprināt uzaicinājumu';
+                }else{
+                    $scope.friendStatus = 4; //uzaicinājumu apstiprināju    //action - atcelt draudzību
+                    $scope.friendStatusText = 'Atcelt draudzību';
+                }
+            }
+        });
+    };
+
+    $scope.changeFriendshipStatus = function () {
+        UserService.changeStatus( $scope.friendId, $scope.friendStatus ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
+    $scope.cancelFriendRequest = function () {
+        UserService.changeStatus( $scope.friendId, 1 ).then( function( response )  {
+            $scope.$broadcast('friend-status-changed');
+        });
+    };
+
+
+    $scope.$on('friend-status-changed', function(event, args) {
+        $scope.checkStatus();
+    });
+
+}]);
+user.controller( 'UserController', [ 'UserService', 'MessageService', '$scope', '$rootScope', '$state',
+    function ( UserService, MessageService, $scope, $rootScope, $state ) {
+
+    $scope.user = null;
+    
+
+    $scope.init = function (authId, userId) {
+        $rootScope.authId = authId;
+        $rootScope.userId = userId;
+        $state.go('posts');
+
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( userId, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+    
+}]);
+user.controller( 'UserEditController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.user = null;
+    $scope.disabled = true;
+
+    $scope.init = function (id) {
+
+        UserService.getUser( id ).then( function( response )
+        {
+            $scope.user = response;
+        });
+    };
+
+    $scope.saveUser = function ( ) {
+        UserService.updateUser( $scope.user.id, $scope.user ).then( function( response )
+        {
+           console.log(response);
+        });
+    }
+
+}]);
+user.controller( 'UserMessageSenderController', [ 'MessageService', '$scope', function ( MessageService, $scope ) {
+
+        $scope.userId = null;
+
+        $scope.disabled = true;
+        $scope.message = {
+            messageText: "",
+            receiver: ""
+        };
+
+        this.$onInit = function () {
+            $scope.userId = this.userId;
+        };
+
+        $scope.sendMessage = function()
+        {
+            $scope.message.messageText = $scope.messageBody;
+            $scope.message.receiver = $scope.userId;console.log( $scope.message );
+
+            MessageService.send($scope.message).then(function(response){
+                $scope.messageBody = "";
+            });
+        };
+
+        $scope.checkMessageBody = function () {
+            $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
+        };
+
+        // $scope.ngMessage = function () {
+        //     ngDialog.open({ template: '/api/view/modules.messages.api.dialog', className: 'ngdialog-theme-default' });
+        // };
+
+    }]);
+user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
+    function ( UserService, $scope, $stateParams, $rootScope ) {
+
+        $scope.guests = [];
+        $scope.id = null;
+
+        this.$onInit = function () {
+            $scope.id = $rootScope.authId;
+            UserService.getGuests( $scope.id ).then( function( response )
+            {
+                console.log(response);
+                $scope.guests = response.data;
+            });
+        };
+
+    }]);
+user.component( 'friends', {
+    templateUrl: '/api/view/modules.users.api.friends',
+    controller: 'FriendsController',
+    bindings: {
+        id: '<',
+    }
+})
+user.component( 'invitation', {
+    templateUrl: '/api/view/modules.users.api.invitation',
+    controller: 'InvitationController',
+    bindings: {
+        friendid: '<',
+        myid: '<'
+    }
+})
+user.component( 'sendMessage', {
+    templateUrl: '/api/view/modules.users.api.send_message',
+    controller: 'UserMessageSenderController',
+    bindings: {
+        userId: '<'
+    }
+})
+/**
+ * Created by Admin on 16.08.2016..
+ */
+app.component( 'userInfo', {
+    templateUrl: '/api/view/modules.users.api.user-info',
+    controller: 'UserController',
+    // $routeConfig: [
+    //     { path: "/", component: "posts", name: "posts", useAsDefault: true }
+    // ],
+    bindings: {
+        id: '<'
+    }
+})
+user.service( 'UserService', ['$http', '$q', function( $http, $q )
+    {
+
+        var UserService = {
+
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            updateUser: function ( id, user ) {
+                var deferred = $q.defer();
+                $http.put( '/api/users/' + id,
+                    {
+                        params: user
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getFriends:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            changeStatus: function( id, status )
+             {
+                 var deferred = $q.defer();
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
+                     .success( function( response )
+                     {
+                         deferred.resolve( response );
+                     } )
+                     .error( function()
+                     {
+                         deferred.reject();
+                     } );
+
+                 return deferred.promise;
+             },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            invitations: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/invitations' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getGuests:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/guests')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return UserService;
     }] );
 //# sourceMappingURL=all.js.map
