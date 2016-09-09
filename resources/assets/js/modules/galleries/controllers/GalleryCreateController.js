@@ -31,21 +31,17 @@ galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', '
     };
 
 
-    $scope.deleteImage = function(id)
+    $scope.deleteImage = function(image)
     {
-        GalleriesService.delete(id).then(function(response)
+  console.log( image );
+
+        for( var i = 0; i < $scope.files.length; i++)
         {
-            if( response.errors == undefined )
-            {
-                for( var i = 0; i < $scope.files.length; i++)
-                {
-                    if( $scope.files[i].id == id)
-                    {
-                        $scope.files.splice( i, 1 );
-                    }
-                }
+            if ($scope.files[i].name === image.name ) {
+                $scope.files.splice(i, 1);
             }
-        });
+        }
+
     };
     
 

@@ -1,13 +1,13 @@
 <?php namespace App\Http\Observers;;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Http\Models\Revisions;
+use App\Http\Models\Events;
 class BaseObserver
 {
 
-    public function __construct( Revisions $revisions ) 
+    public function __construct( Events $events )
     {
-        $this->revision = $revisions;
+        $this->event = $events;
     }
 
     /**
@@ -17,7 +17,7 @@ class BaseObserver
     {
         $class = new \ReflectionClass($model);
         
-        $this->revision->create([
+        $this->event->create([
             'revisionable_type'     => $class->getName(),
             'revisionable_id'       => $model->id,
             'user_id'               => \Auth::id()

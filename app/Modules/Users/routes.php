@@ -16,6 +16,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get( 'users/{id}/guests', 'App\Modules\Users\Controllers\api\UserController@guests' );
 
+        Route::get( 'users/{id}/events', 'App\Modules\Users\Controllers\api\UserController@events' );
+
     });
 
 });

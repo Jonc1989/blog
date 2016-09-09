@@ -38,9 +38,10 @@
                 <div class="col-md-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a ui-sref="posts({ id: <?= $id ?>})">Posts</a>
-                            <a ui-sref="friends({ id: <?= $id ?>})">Friends</a>
+                            <a ui-sref="posts({ id: <?= $id ?>})">Posti</a>
+                            <a ui-sref="friends({ id: <?= $id ?>})">Draugi</a>
                             <a ng-if="<?= \Auth::user()->id == $id ?>" ui-sref="visitors">Viesi</a>
+                            <a ui-sref="events({ id: <?= $id ?>})">Notikumi</a>
                         </div>
                         <div class="panel-body">
 

@@ -7,8 +7,8 @@
                     <img ng-src="/image/{{item.user.id}}/{{item.id}}/{{image.file_name}}">
                 </div>
             </a>
-            <div><a ui-sref="show({ id: item.id })"> <span ng-bind="item.name + ' '"></span></a></div>
-            <div><span ng-bind="item.user.name + ' '"></span><span ng-bind="item.user.surname"></span></div>
+            <div class="col-md-12"><a ui-sref="show({ id: item.id })"> <span ng-bind="item.name + ' '"></span></a></div>
+            <div class="col-md-12"><span ng-bind="item.user.name + ' '"></span><span ng-bind="item.user.surname"></span></div>
         </div>
 
     </div>

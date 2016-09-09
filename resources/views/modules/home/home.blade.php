@@ -13,10 +13,7 @@
                     </div>
                 </div>
             </div>
-            <div class="cube-wrap">
-                <div class="cube">Hallo!</div>
-                <div class="cube sleeping">Hallo!</div>
-            </div>
+
 
 
 

@@ -26,5 +26,10 @@ var user = angular.module('users', [ ])
                 url: "/visitors",
                 templateUrl: "/api/view/modules.users.api.visitors",
                 controller: "VisitorController"
+            })
+            .state('events', {
+                url: "/events",
+                templateUrl: "/api/view/modules.users.api.events",
+                controller: "EventController"
             });
     }]);

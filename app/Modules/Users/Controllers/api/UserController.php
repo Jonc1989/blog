@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Controllers\api;
 
+use App\Modules\Users\Repositories\EventRepositoryInterface;
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
 use App\Modules\Users\Repositories\VisitorRepositoryInterface;
 use Illuminate\Http\Request;
@@ -15,11 +16,12 @@ class UserController extends ApiController
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user, VisitorRepositoryInterface $visitors )
+    public function __construct( UsersRepositoryInterface $user, VisitorRepositoryInterface $visitors,
+            EventRepositoryInterface $events )
     {
         $this->user = $user;
         $this->visitors = $visitors;
-
+        $this->events = $events;
     }
 
     /**
@@ -119,5 +121,16 @@ class UserController extends ApiController
     public function guests( $id )
     {
         return $this->respond( $this->visitors->allGuests( $id ) );
+    }
+
+    public function events( $id )
+    {
+        $data = $this->events->allEvents( $id );
+
+        
+
+
+
+        return $this->respond( $data );
     }
 }

@@ -181,6 +181,12 @@ td,
 th {
   padding: 0; }
 
+.close-icon-wrap {
+  display: inline-block;
+  width: 16px;
+  position: absolute;
+  right: 0px; }
+
 .pager {
   margin: 0px;
   position: absolute;
@@ -189,29 +195,6 @@ th {
 
 .comments {
   background: aliceblue; }
-
-.cube {
-  height: 30px;
-  background: antiquewhite;
-  text-align: center;
-  line-height: 30px;
-  width: 100px;
-  overflow: hidden; }
-
-.sleeping {
-  height: 0px; }
-
-.cube-wrap:hover .cube {
-  height: 0px; }
-
-.cube-wrap:hover .sleeping {
-  height: 30px;
-  background: antiquewhite;
-  text-align: center;
-  line-height: 30px; }
-
-.cube {
-  transition: all .3s; }
 
 .close-input {
   position: absolute;
@@ -230,7 +213,7 @@ body {
 .angular-google-map-container {
   height: 400px; }
 
-.post-image img {
+img {
   max-width: 100%;
   max-height: 100%; }
 

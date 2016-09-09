@@ -20,14 +20,14 @@
 
 
                 <div class="col-md-12" >
-                        <div class="col-md-3 gallery-img-preview" ng-repeat="f in files">
-                            <div ng-show="f.uploaded == true" class="icon-wrap" ng-click="deleteImage(f.id, f.img_name)">
-                                <img class="" ng-src="/img/icons/close-icon.png">
-                            </div>
-                                 <img class="" ngf-src="f">
-
+                    <div class="col-md-3 clear-pads gallery-img-preview" ng-repeat="image in files">
+                        <div class="close-icon-wrap" ng-click="deleteImage(image)">
+                            <img class="" ng-src="/images/icons/close.png">
                         </div>
+                         <img class="" ngf-src="image">
+
                     </div>
+                </div>
 
             </div>
 

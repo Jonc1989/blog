@@ -1,5 +1,7 @@
 <?php namespace App\Modules\Galleries;
 
+use App\Modules\Galleries\Listeners\GalleryObserver;
+use App\Modules\Galleries\Models\Gallery;
 use App\Providers\ModuleServiceProvider;
 
 /**
@@ -9,6 +11,11 @@ use App\Providers\ModuleServiceProvider;
  */
 class GalleriesServiceProvider extends ModuleServiceProvider
 {
+  
+    public function boot()
+    {
+        Gallery::observe(GalleryObserver::class);
+    }
     /**
      * Register the service provider.
      *
