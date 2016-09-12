@@ -131,10 +131,9 @@ app.factory('SocketFactory', function ($rootScope) {
         }
     };
 });
-var home = angular.module('home', [
+var comments = angular.module('comments', [
 
-]);
-
+])
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -169,9 +168,10 @@ var galleries = angular.module('galleries', [
 
 }]);
 
-var comments = angular.module('comments', [
+var home = angular.module('home', [
 
-])
+]);
+
 var messages = angular.module('messages', [
 
 ])
@@ -238,141 +238,114 @@ var user = angular.module('users', [ ])
             });
     }]);
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
+comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', function ( UserService, $scope, CommentsService ) {
+
+    $scope.commentBody = '';
+    $scope.comments = [];
+    this.$onInit = function () {
+        $scope.postId = this.postId;
+        $scope.userId = this.userId;
+        $scope.type = this.type;    
+        $scope.commentBody = '';
+        $scope.ready = false;
+        $scope.getComments();
+    };
+
+    $scope.comment = function () {
+        $scope.ready = true;
+    };
+
+    $scope.saveComment = function () {
+        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
+            console.log( response );
+            $scope.commentBody = '';
+        });
+    };
+    
+    $scope.close = function () {
+        $scope.ready = false;
+    };
+
+    $scope.getComments = function () {
+        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
+            $scope.comments = response.data;
+        });
+    };
+}]);
+comments.component( 'comments', {
+    templateUrl: '/api/view/modules.comments.api.comments',
+    controller: 'CommentsController',
     bindings: {
-        id: '<'
+        postId: '<',
+        userId: '<',
+        type: '<'
     }
 })
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
+comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
+{
 
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
+    var CommentsService = {
 
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
+       
+        save: function( postId, userId, type, comment )
         {
-            $scope.user = response;
-        });
-        
-    };
+            var deferred = $q.defer();
+            var data = {
+                postId: postId, 
+                userId: userId,
+                type: type,
+                comment: comment
+            };
+            $http.post( '/api/comments/', data )
+                .success( function( response )
+                {console.log();
+                    deferred.resolve( response );
+                } )
+                .error( function( response, status )
+                {
+                    if (status === 422)
+                    {
+                        deferred.resolve({errors: response});
+                    } else
+                    {
+                        deferred.reject();
+                    }
+                } );
 
+            return deferred.promise;
 
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+        },
 
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
+        all: function( postId, type )
         {
-            $scope.users = response;
-        });
-    }
+            // var params = {
+            //     postId: postId,
+            //     type: type
+            // };
 
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+            var deferred = $q.defer();
+            $http.get( '/api/comments/', { params: { postId: postId, type: type } } )
+                .success( function( response )
+                {
+                    deferred.resolve( response );
+                } )
+                .error( function( response, status )
+                {
+                    if (status === 422)
+                    {
+                        deferred.resolve({errors: response});
+                    } else
+                    {
+                        deferred.reject();
+                    }
+                } );
 
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
+            return deferred.promise;
+
         }
     };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
+    return CommentsService;
+}] );
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -689,114 +662,29 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-comments.component( 'comments', {
-    templateUrl: '/api/view/modules.comments.api.comments',
-    controller: 'CommentsController',
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
     bindings: {
-        postId: '<',
-        userId: '<',
-        type: '<'
+        id: '<'
     }
 })
-comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', function ( UserService, $scope, CommentsService ) {
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
 
-    $scope.commentBody = '';
-    $scope.comments = [];
-    this.$onInit = function () {
-        $scope.postId = this.postId;
-        $scope.userId = this.userId;
-        $scope.type = this.type;    
-        $scope.commentBody = '';
-        $scope.ready = false;
-        $scope.getComments();
-    };
-
-    $scope.comment = function () {
-        $scope.ready = true;
-    };
-
-    $scope.saveComment = function () {
-        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
-            console.log( response );
-            $scope.commentBody = '';
-        });
-    };
-    
-    $scope.close = function () {
-        $scope.ready = false;
-    };
-
-    $scope.getComments = function () {
-        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
-            $scope.comments = response.data;
-        });
-    };
-}]);
-comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
-{
-
-    var CommentsService = {
-
-       
-        save: function( postId, userId, type, comment )
-        {
-            var deferred = $q.defer();
-            var data = {
-                postId: postId, 
-                userId: userId,
-                type: type,
-                comment: comment
-            };
-            $http.post( '/api/comments/', data )
-                .success( function( response )
-                {console.log();
-                    deferred.resolve( response );
-                } )
-                .error( function( response, status )
-                {
-                    if (status === 422)
-                    {
-                        deferred.resolve({errors: response});
-                    } else
-                    {
-                        deferred.reject();
-                    }
-                } );
-
-            return deferred.promise;
-
-        },
-
-        all: function( postId, type )
-        {
-            // var params = {
-            //     postId: postId,
-            //     type: type
-            // };
-
-            var deferred = $q.defer();
-            $http.get( '/api/comments/', { params: { postId: postId, type: type } } )
-                .success( function( response )
-                {
-                    deferred.resolve( response );
-                } )
-                .error( function( response, status )
-                {
-                    if (status === 422)
-                    {
-                        deferred.resolve({errors: response});
-                    } else
-                    {
-                        deferred.reject();
-                    }
-                } );
-
-            return deferred.promise;
-
-        }
-    };
-    return CommentsService;
-}] );
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
 
     $scope.friendId = null;
@@ -902,6 +790,118 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     //});
 
     
+}]);
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+
+
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
 }]);
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
@@ -1045,6 +1045,23 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
+post.component( 'like', {
+    templateUrl: '/api/view/modules.posts.api.like',
+    controller: 'LikeController',
+    bindings: {
+        likes: '<',
+        authId: '<',
+        postId: '@',
+        type: '<'
+    }
+})
+post.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController',
+    bindings: {
+        authId: '<'
+    }
+})
 post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, PostService ) {
         
     $scope.likeStatus = false;
@@ -1232,23 +1249,6 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
 }]);
-post.component( 'like', {
-    templateUrl: '/api/view/modules.posts.api.like',
-    controller: 'LikeController',
-    bindings: {
-        likes: '<',
-        authId: '<',
-        postId: '@',
-        type: '<'
-    }
-})
-post.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController',
-    bindings: {
-        authId: '<'
-    }
-})
 post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {
@@ -1371,7 +1371,7 @@ user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
     function ( UserService, $scope, $rootScope ) {
 
         $scope.id = null;
-        
+        $scope.events = [];
         this.$onInit = function () {
             $scope.id = $rootScope.userId;
 
@@ -1380,7 +1380,8 @@ user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
 
         $scope.getEvents = function () {
             UserService.getEvents( $scope.id ).then( function ( response ) {
-                console.log( response )
+                $scope.events = response;
+                console.log( response);
             });
         }
 

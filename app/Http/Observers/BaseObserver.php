@@ -1,4 +1,4 @@
-<?php namespace App\Http\Observers;;
+<?php namespace App\Http\Observers;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Http\Models\Events;
@@ -16,10 +16,11 @@ class BaseObserver
     public function created( $model )
     {
         $class = new \ReflectionClass($model);
-        
+
         $this->event->create([
-            'revisionable_type'     => $class->getName(),
-            'revisionable_id'       => $model->id,
+            'revisionable_model'    => $class->getName(),
+            'type'                  => strtolower( $class->getShortName() ),
+            'event_id'              => $model->id,
             'user_id'               => \Auth::id()
         ]);
     }

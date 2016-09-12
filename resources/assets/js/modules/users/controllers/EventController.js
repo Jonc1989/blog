@@ -2,7 +2,7 @@ user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
     function ( UserService, $scope, $rootScope ) {
 
         $scope.id = null;
-        
+        $scope.events = [];
         this.$onInit = function () {
             $scope.id = $rootScope.userId;
 
@@ -11,7 +11,8 @@ user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
 
         $scope.getEvents = function () {
             UserService.getEvents( $scope.id ).then( function ( response ) {
-                console.log( response )
+                $scope.events = response;
+                console.log( response);
             });
         }
 

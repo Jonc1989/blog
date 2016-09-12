@@ -22,6 +22,9 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
                 return $this->model->where( 'friend_id', $id )->where( 'user_id', \Auth::user()->id )->delete();
 
             case 3:
+                //$model = $this->model->where( 'user_id', $id )->where( 'friend_id', \Auth::user()->id )->get();
+                //$model->friendship = 1;
+                //$model->save();
                 return $this->model->where( 'user_id', $id )->where( 'friend_id', \Auth::user()->id )->update(['friendship' => 1]);
 
             case 4:

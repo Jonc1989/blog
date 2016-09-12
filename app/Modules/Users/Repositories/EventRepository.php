@@ -16,7 +16,7 @@ class EventRepository extends Repository implements EventRepositoryInterface
     
     public function allEvents( $id )
     {
-        return $this->model->where( 'user_id', $id )->get();
+        return $this->model->where( 'user_id', $id )->orderBy( 'updated_at', 'DESC' )->get();
     }
     
 }

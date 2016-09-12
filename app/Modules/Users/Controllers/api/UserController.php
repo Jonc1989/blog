@@ -126,11 +126,35 @@ class UserController extends ApiController
     public function events( $id )
     {
         $data = $this->events->allEvents( $id );
+	    
+	    $default = [];
+		$d = [];
+	    
+        foreach ( $data as $event ){
+            switch ($event->type){
+	            case 'gallery':
+					if( $event->key == '' || $event->key == null ){
+						$model = \App::make( $event->revisionable_model );
+						$e_data = $model->with('images')->find( $event->event_id );
+						$e_data->type = 'gallery';
+						//$galleryEvents[] = $e_data;
+						$d[] = $e_data;
+					}
+		            break;
+	            case 'friends':
+		            if( $event->key == '' || $event->key == null ){
+			            $model = \App::make( $event->revisionable_model );
+			            $e_data = $model->find( $event->event_id );
+			            $e_data->type = 'friends';
+			            //$friendEvents[] = $e_data;
+			            $d[] = $e_data;
+		            }
+		            break;
+	            default:
+		            $default[] = null;
+            }
+        }
 
-        
-
-
-
-        return $this->respond( $data );
+        return $this->respond( $d );
     }
 }
