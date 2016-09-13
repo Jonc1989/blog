@@ -6,6 +6,7 @@ redis.subscribe('post-added');
 redis.subscribe('user-online');
 redis.subscribe('message-sent');
 redis.subscribe('message-readed');
+redis.subscribe('comment-created');
 redis.on('message', function ( channel, message ) {
 console.log( channel );
     console.log( message );

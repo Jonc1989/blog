@@ -5,12 +5,12 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         $scope.gallery = {};
         $scope.currentImagePath = '';
         $scope.currentImageIndex = null;
+        $scope.currentImageId = null;
         this.$onInit = function()
         {
             GalleriesService.gallery($scope.id).then(function(response)
             {
                 $scope.gallery = response;
-                //console.log($scope.gallery)
             });
         };
 
@@ -25,7 +25,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
             });
 
             $('#imageModal').modal('show')
-        }
+        };
 
         $scope.next = function ()
         {
@@ -53,7 +53,9 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         {
             if( newVal !== oldVal  )
             {
+                $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
                 $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
+
             }
 
         }, true );

@@ -11,6 +11,6 @@ class CommentsRepository extends Repository implements CommentsRepositoryInterfa
 
     public function allComments( $post_id, $type )
     {
-        return $this->model->where( 'post_id', $post_id )->where( 'type', $type )->with( 'user' )->get();
+        return $this->model->where( 'post_id', $post_id )->where( 'type', $type )->with( 'user' )->orderBy( 'updated_at', 'desc' )->get();
     }
 }

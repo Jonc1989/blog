@@ -4,6 +4,7 @@ namespace App\Modules\Comments\Controllers\api;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Requests;
+use App\Modules\Comments\Events\CommentCreated;
 use Illuminate\Http\Request;
 use App\Modules\Comments\Repositories\CommentsRepositoryInterface;
 use Illuminate\Support\Facades\Input;
@@ -59,7 +60,14 @@ class CommentController extends ApiController
 			'text'          => $request->get( 'comment' )
 		]);
 		
-		return $this->respondCreated( null, $data );
+		$response = $this->respondCreated( null, $data );
+		
+		event( new CommentCreated( [
+			'postId'    => $request->get( 'postId' ),
+			'type'      => $request->get( 'type' ) 
+		]));
+		
+		return $response;
 	}
 
 	/**

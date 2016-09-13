@@ -191,7 +191,8 @@ th {
   margin: 0px;
   position: absolute;
   top: 50%;
-  width: 95%; }
+  width: 95%;
+  z-index: 1; }
 
 .comments {
   background: aliceblue; }

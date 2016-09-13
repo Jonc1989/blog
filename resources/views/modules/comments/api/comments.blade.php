@@ -6,7 +6,7 @@
         <button class="btn btn-primary btn-xs pull-right" ng-click="saveComment()">Saglabāt</button>
     </div>
 
-    <div class="col-md-12 comments">
+    <div class="col-md-12 comments clear-pads">
         <div class="col-md-12 comment" ng-repeat="comment in comments">
             <div><span ng-bind="comment.user.name"></span>&nbsp;<span ng-bind="comment.user.surname"></span></div>
             <div>

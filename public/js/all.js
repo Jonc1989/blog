@@ -238,7 +238,17 @@ var user = angular.module('users', [ ])
             });
     }]);
 
-comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', function ( UserService, $scope, CommentsService ) {
+comments.component( 'comments', {
+    templateUrl: '/api/view/modules.comments.api.comments',
+    controller: 'CommentsController',
+    bindings: {
+        postId: '<',
+        userId: '<',
+        type: '<'
+    }
+})
+comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', 'SocketFactory',
+    function ( UserService, $scope, CommentsService, SocketFactory ) {
 
     $scope.commentBody = '';
     $scope.comments = [];
@@ -249,6 +259,15 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         $scope.commentBody = '';
         $scope.ready = false;
         $scope.getComments();
+        SocketFactory.on('comment-created', function (data) {
+            if( data.params.postId == $scope.postId && data.params.type == $scope.type ){
+                $scope.getComments();
+            }
+        });
+    };
+
+    this.$onChanges = function (changesObj) {
+        console.log(changesObj)
     };
 
     $scope.comment = function () {
@@ -256,31 +275,21 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.saveComment = function () {
-        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
-            console.log( response );
+        CommentsService.save( this.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
             $scope.commentBody = '';
         });
     };
     
-    $scope.close = function () {
+    $scope.close = function(){
         $scope.ready = false;
     };
 
     $scope.getComments = function () {
-        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
+        CommentsService.all( this.postId, $scope.type ).then( function ( response ) {
             $scope.comments = response.data;
         });
     };
 }]);
-comments.component( 'comments', {
-    templateUrl: '/api/view/modules.comments.api.comments',
-    controller: 'CommentsController',
-    bindings: {
-        postId: '<',
-        userId: '<',
-        type: '<'
-    }
-})
 comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
 {
 
@@ -439,12 +448,12 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         $scope.gallery = {};
         $scope.currentImagePath = '';
         $scope.currentImageIndex = null;
+        $scope.currentImageId = null;
         this.$onInit = function()
         {
             GalleriesService.gallery($scope.id).then(function(response)
             {
                 $scope.gallery = response;
-                //console.log($scope.gallery)
             });
         };
 
@@ -459,7 +468,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
             });
 
             $('#imageModal').modal('show')
-        }
+        };
 
         $scope.next = function ()
         {
@@ -487,7 +496,9 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         {
             if( newVal !== oldVal  )
             {
+                $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
                 $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
+
             }
 
         }, true );
@@ -685,112 +696,6 @@ app.component( 'search', {
     templateUrl: '/api/view/modules.home.api.search',
     controller: 'SearchController'
 })
-messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
-
-    $scope.friendId = null;
-    $scope.userSearchOpen = false;
-    $scope.messages = {};
-    $scope.users = {};
-    $scope.disabled = true;
-    $scope.message = {
-        messageText: "",
-        receiver: ""
-    };
-    $scope.receivers = [];
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-
-    this.$onInit = function () {
-        $scope.messangers();
-    };
-
-    $scope.messangers = function()
-    {
-        MessageService.getMessengers().then( function( response )
-        {
-            $scope.users = response.data;
-
-            if( $scope.users.length ){
-                $scope.friendId = $scope.users[0].id;
-                $scope.getMessagesFromUser( $scope.friendId );
-            }
-
-        });
-    };
-
-    $scope.getMessagesFromUser = function( id )
-    {
-        $scope.friendId = id;
-        MessageService.getMessages( id ).then( function( response )
-        {
-            $scope.messages = response;
-
-
-        });
-    };
-
-    $scope.sendMessage = function()
-    {
-        $scope.message.messageText = $scope.messageBody;
-        $scope.message.receiver = $scope.friendId;
-
-        MessageService.send( $scope.message ).then(function(response){
-            $scope.messageBody = "";
-            $scope.getMessagesFromUser( $scope.friendId );
-            $scope.userSearchOpen = false;
-        });
-    };
-
-    $scope.checkMessageBody = function () {
-        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
-    };
-    
-    $scope.newMessage = function () {
-        $scope.userSearchOpen = true;
-        $scope.friendId = undefined;
-        $scope.messages = {};
-    }
-
-
-
-    $scope.search = function()
-    {                console.log( $scope.searchKey);
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-
-    $scope.selectUser = function( user )
-    {
-        $scope.searchKey = user.name + ' ' + user.surname;
-        $scope.friendId = user.id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-
-    //$(window).scroll(function() {
-
-
-
-    //});
-
-    
-}]);
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -902,6 +807,112 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
     $scope.showSearchResults = function () {
         $('#search-results').show();
     }
+}]);
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
+
+    $scope.friendId = null;
+    $scope.userSearchOpen = false;
+    $scope.messages = {};
+    $scope.users = {};
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
+    $scope.receivers = [];
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+
+    this.$onInit = function () {
+        $scope.messangers();
+    };
+
+    $scope.messangers = function()
+    {
+        MessageService.getMessengers().then( function( response )
+        {
+            $scope.users = response.data;
+
+            if( $scope.users.length ){
+                $scope.friendId = $scope.users[0].id;
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+
+        });
+    };
+
+    $scope.getMessagesFromUser = function( id )
+    {
+        $scope.friendId = id;
+        MessageService.getMessages( id ).then( function( response )
+        {
+            $scope.messages = response;
+
+
+        });
+    };
+
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.friendId;
+
+        MessageService.send( $scope.message ).then(function(response){
+            $scope.messageBody = "";
+            $scope.getMessagesFromUser( $scope.friendId );
+            $scope.userSearchOpen = false;
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
+    };
+    
+    $scope.newMessage = function () {
+        $scope.userSearchOpen = true;
+        $scope.friendId = undefined;
+        $scope.messages = {};
+    }
+
+
+
+    $scope.search = function()
+    {                console.log( $scope.searchKey);
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+
+    $scope.selectUser = function( user )
+    {
+        $scope.searchKey = user.name + ' ' + user.surname;
+        $scope.friendId = user.id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+
+    //$(window).scroll(function() {
+
+
+
+    //});
+
+    
 }]);
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
@@ -1045,23 +1056,6 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
-post.component( 'like', {
-    templateUrl: '/api/view/modules.posts.api.like',
-    controller: 'LikeController',
-    bindings: {
-        likes: '<',
-        authId: '<',
-        postId: '@',
-        type: '<'
-    }
-})
-post.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController',
-    bindings: {
-        authId: '<'
-    }
-})
 post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, PostService ) {
         
     $scope.likeStatus = false;
@@ -1249,6 +1243,23 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
 }]);
+post.component( 'like', {
+    templateUrl: '/api/view/modules.posts.api.like',
+    controller: 'LikeController',
+    bindings: {
+        likes: '<',
+        authId: '<',
+        postId: '@',
+        type: '<'
+    }
+})
+post.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController',
+    bindings: {
+        authId: '<'
+    }
+})
 post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {

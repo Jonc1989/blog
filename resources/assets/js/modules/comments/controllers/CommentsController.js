@@ -1,4 +1,5 @@
-comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', function ( UserService, $scope, CommentsService ) {
+comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsService', 'SocketFactory',
+    function ( UserService, $scope, CommentsService, SocketFactory ) {
 
     $scope.commentBody = '';
     $scope.comments = [];
@@ -9,6 +10,15 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         $scope.commentBody = '';
         $scope.ready = false;
         $scope.getComments();
+        SocketFactory.on('comment-created', function (data) {
+            if( data.params.postId == $scope.postId && data.params.type == $scope.type ){
+                $scope.getComments();
+            }
+        });
+    };
+
+    this.$onChanges = function (changesObj) {
+        console.log(changesObj)
     };
 
     $scope.comment = function () {
@@ -16,18 +26,17 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.saveComment = function () {
-        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
-            console.log( response );
+        CommentsService.save( this.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
             $scope.commentBody = '';
         });
     };
     
-    $scope.close = function () {
+    $scope.close = function(){
         $scope.ready = false;
     };
 
     $scope.getComments = function () {
-        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
+        CommentsService.all( this.postId, $scope.type ).then( function ( response ) {
             $scope.comments = response.data;
         });
     };
