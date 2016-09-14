@@ -4,6 +4,7 @@ namespace App\Modules\Common\Controllers;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Requests;
+use App\Modules\Common\Events\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use App\Modules\Common\Repositories\LikesRepositoryInterface;
@@ -22,7 +23,8 @@ class LikeController extends ApiController
     public function getLikes()
     {
         $postId = Input::get('postId');
-        return $this->respond( $this->likes->getLikes( $postId ) );
+        $type = Input::get('type');
+        return $this->respond( $this->likes->getLikes( $postId, $type ) );
     }
     
     public function like()
@@ -42,6 +44,10 @@ class LikeController extends ApiController
             ]);
         }
 
+        event( new Like( [
+            'postId'    => $postId,
+            'type'      => $type
+        ]));
         return $this->respond( $response );
     }
 

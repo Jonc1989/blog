@@ -17,8 +17,19 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         });
     };
 
-    this.$onChanges = function (changesObj) {
-        console.log(changesObj)
+    this.$onChanges = function ( bindings) {
+        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.postId ){
+            $scope.postId = bindings.postId.currentValue;
+        }
+        if( bindings.userId !== undefined && bindings.userId.currentValue !== $scope.userId ){
+            $scope.userId = bindings.userId.currentValue;
+        }
+        if( bindings.type !== undefined && bindings.type.currentValue !== $scope.type ){
+            $scope.type = bindings.type.currentValue;
+        }
+        if( $scope.postId !== undefined && $scope.type !== undefined){
+            $scope.getComments();
+        }
     };
 
     $scope.comment = function () {
@@ -26,7 +37,7 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.saveComment = function () {
-        CommentsService.save( this.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
+        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
             $scope.commentBody = '';
         });
     };
@@ -36,7 +47,7 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.getComments = function () {
-        CommentsService.all( this.postId, $scope.type ).then( function ( response ) {
+        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
             $scope.comments = response.data;
         });
     };

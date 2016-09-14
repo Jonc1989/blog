@@ -3,19 +3,21 @@ app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', f
     $scope.authId = null;
     $scope.messageCount = null;
     this.$onInit = function () {
-        $scope.authId = this.authId;
-        $scope.getMessageCount();
+        if( this.authId !== undefined ){
+            $scope.authId = this.authId;
+            $scope.getMessageCount();
 
-        SocketFactory.on('message-sent', function (data) {
-            if( data.receiver == $scope.authId ){
-                $scope.getMessageCount()
-            }
-        });
-        SocketFactory.on('message-readed', function (data) {
-            if( data.receiver == $scope.authId ){
-                $scope.getMessageCount()
-            }
-        });
+            SocketFactory.on('message-sent', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+            SocketFactory.on('message-readed', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+        }
     };
 
     $scope.getMessageCount = function () {

@@ -40,7 +40,7 @@ class GalleryRepository extends Repository implements GalleryRepositoryInterface
 
     public function gallery( $id )
     {
-        return $this->model->with('images', 'user' )->find($id);
+        return $this->model->with('images', 'likes', 'images.likes', 'user' )->find($id);
 
     }
 

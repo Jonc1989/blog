@@ -27,4 +27,9 @@ class Gallery extends Model {
     {
         return $this->belongsTo( 'App\Modules\Users\Models\User' );
     }
+
+    public function likes()
+    {
+        return $this->hasMany( 'App\Modules\Common\Models\Likes', 'post_id' );
+    }
 }

@@ -9,9 +9,9 @@ class LikesRepository extends Repository implements LikesRepositoryInterface
         $this->model = $likes;
     }
 
-    public function getLikes( $postId )
+    public function getLikes( $postId, $type )
     {
-        return $this->model->where( 'post_id', $postId )->get();
+        return $this->model->where( 'post_id', $postId )->where( 'type', $type )->get();
     }
 
     public function deleteLike( $authId, $postId, $type )

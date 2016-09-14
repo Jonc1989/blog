@@ -24,19 +24,21 @@ app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', f
     $scope.authId = null;
     $scope.messageCount = null;
     this.$onInit = function () {
-        $scope.authId = this.authId;
-        $scope.getMessageCount();
+        if( this.authId !== undefined ){
+            $scope.authId = this.authId;
+            $scope.getMessageCount();
 
-        SocketFactory.on('message-sent', function (data) {
-            if( data.receiver == $scope.authId ){
-                $scope.getMessageCount()
-            }
-        });
-        SocketFactory.on('message-readed', function (data) {
-            if( data.receiver == $scope.authId ){
-                $scope.getMessageCount()
-            }
-        });
+            SocketFactory.on('message-sent', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+            SocketFactory.on('message-readed', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+        }
     };
 
     $scope.getMessageCount = function () {
@@ -266,8 +268,19 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         });
     };
 
-    this.$onChanges = function (changesObj) {
-        console.log(changesObj)
+    this.$onChanges = function ( bindings) {
+        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.postId ){
+            $scope.postId = bindings.postId.currentValue;
+        }
+        if( bindings.userId !== undefined && bindings.userId.currentValue !== $scope.userId ){
+            $scope.userId = bindings.userId.currentValue;
+        }
+        if( bindings.type !== undefined && bindings.type.currentValue !== $scope.type ){
+            $scope.type = bindings.type.currentValue;
+        }
+        if( $scope.postId !== undefined && $scope.type !== undefined){
+            $scope.getComments();
+        }
     };
 
     $scope.comment = function () {
@@ -275,7 +288,7 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.saveComment = function () {
-        CommentsService.save( this.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
+        CommentsService.save( $scope.postId, $scope.userId, $scope.type, $scope.commentBody ).then(function ( response ) {
             $scope.commentBody = '';
         });
     };
@@ -285,7 +298,7 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
     };
 
     $scope.getComments = function () {
-        CommentsService.all( this.postId, $scope.type ).then( function ( response ) {
+        CommentsService.all( $scope.postId, $scope.type ).then( function ( response ) {
             $scope.comments = response.data;
         });
     };
@@ -673,29 +686,6 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -808,6 +798,29 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
 
     $scope.friendId = null;
@@ -1056,7 +1069,7 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
         };
         return MessageService;
     }] );
-post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, PostService ) {
+post.controller( 'LikeController', ['$scope', 'PostService', 'SocketFactory', function ( $scope, PostService, SocketFactory ) {
         
     $scope.likeStatus = false;
     $scope.likes = [];
@@ -1068,7 +1081,28 @@ post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, 
         $scope.authId = this.authId;
         $scope.postId = this.postId;
         $scope.type = this.type;
+
         $scope.checkLikeStatus();
+        SocketFactory.on('like', function (data) {
+            if( data.params.postId == $scope.postId && data.params.type == $scope.type ){
+                $scope.getLikes();
+            }
+        });
+    };
+
+    this.$onChanges = function ( bindings) {
+        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.postId ){
+            $scope.postId = bindings.postId.currentValue;
+        }
+        if( bindings.authId !== undefined && bindings.authId.currentValue !== $scope.authId ){
+            $scope.authId = bindings.authId.currentValue;
+        }
+        if( bindings.type !== undefined && bindings.type.currentValue !== $scope.type ){
+            $scope.type = bindings.type.currentValue;
+        }
+        if( $scope.postId !== undefined && $scope.type !== undefined){
+            $scope.getLikes();
+        }
     };
 
     $scope.checkLikeStatus = function () {
@@ -1088,7 +1122,7 @@ post.controller( 'LikeController', ['$scope', 'PostService', function ( $scope, 
     };
 
     $scope.getLikes = function () {
-        PostService.getLikes( $scope.postId ).then(function ( response ) {
+        PostService.getLikes( $scope.postId, $scope.type ).then(function ( response ) {
             $scope.likes = response;
             $scope.checkLikeStatus();
         });
@@ -1324,10 +1358,10 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             },
 
-            getLikes: function( postId )
+            getLikes: function( postId, type )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/posts/likes', { params: { postId: postId }})
+                $http.get( '/api/posts/likes', { params: { postId: postId, type: type }})
                     .success( function( response )
                     {
                         deferred.resolve( response );
@@ -1378,6 +1412,188 @@ app.component( 'userInfo', {
         id: '<'
     }
 })
+user.service( 'UserService', ['$http', '$q', function( $http, $q )
+    {
+
+        var UserService = {
+
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            updateUser: function ( id, user ) {
+                var deferred = $q.defer();
+                $http.put( '/api/users/' + id,
+                    {
+                        params: user
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getFriends:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            changeStatus: function( id, status )
+             {
+                 var deferred = $q.defer();
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
+                     .success( function( response )
+                     {
+                         deferred.resolve( response );
+                     } )
+                     .error( function()
+                     {
+                         deferred.reject();
+                     } );
+
+                 return deferred.promise;
+             },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            invitations: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/invitations' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getGuests:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/guests')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getEvents:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/events')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return UserService;
+    }] );
 user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
     function ( UserService, $scope, $rootScope ) {
 
@@ -1561,186 +1777,4 @@ user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams',
         };
 
     }]);
-user.service( 'UserService', ['$http', '$q', function( $http, $q )
-    {
-
-        var UserService = {
-
-            getUser:  function( id, details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id,
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            updateUser: function ( id, user ) {
-                var deferred = $q.defer();
-                $http.put( '/api/users/' + id,
-                    {
-                        params: user
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-
-            onlineUsers:  function( details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/online',
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            getFriends:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            changeStatus: function( id, status )
-             {
-                 var deferred = $q.defer();
-                 var data = {
-                     id: id,
-                     status: status
-                 };
-                 $http.post( '/api/friends', data )
-                     .success( function( response )
-                     {
-                         deferred.resolve( response );
-                     } )
-                     .error( function()
-                     {
-                         deferred.reject();
-                     } );
-
-                 return deferred.promise;
-             },
-
-            getStatus: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friend/status/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            invitations: function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getGuests:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/guests')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getEvents:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/events')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return UserService;
-    }] );
 //# sourceMappingURL=all.js.map

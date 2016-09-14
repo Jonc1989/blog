@@ -9,7 +9,7 @@
             </a>
         </div>
     </div>
-
+    <like ng-if="gallery.id" likes="gallery.likes" auth-id="<?= \Auth::id() ?>" post-id="{{gallery.id}}" type="'gallery'"></like>
     <comments ng-if="gallery.id" post-id="gallery.id" user-id="<?= \Auth::id() ?>" type="'gallery'"></comments>
 
     <div class="modal fade" tabindex="-1" role="dialog" id="imageModal">
@@ -34,6 +34,7 @@
                             </div>
 
                             <div > Komentāri</div>{{currentImageId}}
+                            <like ng-if="currentImageId" likes="gallery.images[currentImageIndex].likes" auth-id="<?= \Auth::id() ?>" post-id="{{currentImageId}}" type="'image'"></like>
                             <comments ng-if="currentImageId" post-id="currentImageId"
                                       user-id="<?= \Auth::id() ?>" type="'image'"></comments>
                         </div>

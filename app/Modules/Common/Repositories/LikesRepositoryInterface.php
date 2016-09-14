@@ -6,7 +6,7 @@ interface LikesRepositoryInterface
 {
     public function __construct(Likes $likes);
     
-    public function getLikes( $postId );
+    public function getLikes( $postId, $type );
 
     public function deleteLike( $authId, $postId, $type );
 

@@ -7,11 +7,12 @@ redis.subscribe('user-online');
 redis.subscribe('message-sent');
 redis.subscribe('message-readed');
 redis.subscribe('comment-created');
+redis.subscribe('like');
 redis.on('message', function ( channel, message ) {
 console.log( channel );
-    console.log( message );
-    message = JSON.parse(message);
 
+    message = JSON.parse(message);
+    console.log( message );
     io.emit( channel, message.data );
 });
 

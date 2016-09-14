@@ -62,10 +62,10 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
 
             },
 
-            getLikes: function( postId )
+            getLikes: function( postId, type )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/posts/likes', { params: { postId: postId }})
+                $http.get( '/api/posts/likes', { params: { postId: postId, type: type }})
                     .success( function( response )
                     {
                         deferred.resolve( response );

@@ -17,4 +17,10 @@ class Images extends Model {
      * @var array
      */
     protected $fillable = [ 'file_name', 'thumb', 'original_name', 'gallery_id', 'post_id', 'path' ];
+
+    public function likes()
+    {
+        return $this->hasMany( 'App\Modules\Common\Models\Likes', 'post_id' );
+    }
+    
 }
