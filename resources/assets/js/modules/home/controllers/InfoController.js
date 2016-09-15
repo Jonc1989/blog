@@ -10,7 +10,5 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
         });
         
     };
-
-
     
 }]);

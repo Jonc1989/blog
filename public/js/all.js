@@ -10,8 +10,11 @@ var app = angular.module( 'app', [
     'galleries',
     'comments',
     'ngToast'
-] );
-
+] )
+    .config([ '$httpProvider', function( $httpProvider )
+        {
+            $httpProvider.interceptors.push('HttpInterceptor');
+        }]);
 app.component( 'menuComponent', {
     templateUrl: '/api/view/layouts.api.menu',
     controller: 'MenuController',
@@ -101,6 +104,43 @@ app.directive("scroll", [ 'MessageService', function ( MessageService ) {
     }
 
 }])
+app.factory('HttpInterceptor', function($q) {
+    return {
+        // optional method
+        'request': function(config) {
+            // do something on success
+            return config;
+        },
+
+        // optional method
+        'requestError': function(rejection) {
+            // do something on error
+            if (canRecover(rejection)) {
+                return responseOrNewPromise
+            }
+            return $q.reject(rejection);
+        },
+
+
+
+        // optional method
+        'response': function(response) {
+            return response;
+        },
+
+        // optional method
+        'responseError': function(response) {
+            var status = response.status;
+            if (status == 401) {
+                console.log('You are unauthorised!')
+                //window.location.replace( "/" );
+                return;
+            }
+            return $q.reject(response);
+        }
+    };
+});
+
 app.factory('SocketFactory', function ($rootScope) {
     var socket = io('http://localhost:3000');
     return {
@@ -174,6 +214,10 @@ var home = angular.module('home', [
 
 ]);
 
+var post = angular.module('posts', [
+
+]);
+
 var messages = angular.module('messages', [
 
 ])
@@ -199,10 +243,6 @@ var messages = angular.module('messages', [
         //         }
         //     });
     });
-
-var post = angular.module('posts', [
-
-]);
 
 var user = angular.module('users', [ ])
     .config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -686,6 +726,29 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -698,8 +761,6 @@ user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserSer
         });
         
     };
-
-
     
 }]);
 home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
@@ -798,277 +859,6 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
-
-    $scope.friendId = null;
-    $scope.userSearchOpen = false;
-    $scope.messages = {};
-    $scope.users = {};
-    $scope.disabled = true;
-    $scope.message = {
-        messageText: "",
-        receiver: ""
-    };
-    $scope.receivers = [];
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-
-    this.$onInit = function () {
-        $scope.messangers();
-    };
-
-    $scope.messangers = function()
-    {
-        MessageService.getMessengers().then( function( response )
-        {
-            $scope.users = response.data;
-
-            if( $scope.users.length ){
-                $scope.friendId = $scope.users[0].id;
-                $scope.getMessagesFromUser( $scope.friendId );
-            }
-
-        });
-    };
-
-    $scope.getMessagesFromUser = function( id )
-    {
-        $scope.friendId = id;
-        MessageService.getMessages( id ).then( function( response )
-        {
-            $scope.messages = response;
-
-
-        });
-    };
-
-    $scope.sendMessage = function()
-    {
-        $scope.message.messageText = $scope.messageBody;
-        $scope.message.receiver = $scope.friendId;
-
-        MessageService.send( $scope.message ).then(function(response){
-            $scope.messageBody = "";
-            $scope.getMessagesFromUser( $scope.friendId );
-            $scope.userSearchOpen = false;
-        });
-    };
-
-    $scope.checkMessageBody = function () {
-        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
-    };
-    
-    $scope.newMessage = function () {
-        $scope.userSearchOpen = true;
-        $scope.friendId = undefined;
-        $scope.messages = {};
-    }
-
-
-
-    $scope.search = function()
-    {                console.log( $scope.searchKey);
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-
-    $scope.selectUser = function( user )
-    {
-        $scope.searchKey = user.name + ' ' + user.surname;
-        $scope.friendId = user.id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-
-    //$(window).scroll(function() {
-
-
-
-    //});
-
-    
-}]);
-messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
-    {
-        var MessageService = {
-
-            send: function(message)
-            {
-                var deferred = $q.defer();
-                $http.post( '/api/messages', message )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response.data );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            getMessengers:  function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messengers' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getMessages: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messages/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            markReaded: function( message )
-            {
-                var deferred = $q.defer();
-                var data = {
-                    readed: message.readed
-                };
-                $http.put( '/api/messages/' + message.id, data )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            getNewMessages: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/new-messages/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            loadMore: function( id, currentPage )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messages/' + id, { params: { currentPage: currentPage } } )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            }
-        };
-        return MessageService;
-    }] );
 post.controller( 'LikeController', ['$scope', 'PostService', 'SocketFactory', function ( $scope, PostService, SocketFactory ) {
         
     $scope.likeStatus = false;
@@ -1377,6 +1167,254 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
         };
         return PostService;
     }] );
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
+
+    $scope.friendId = null;
+    $scope.userSearchOpen = false;
+    $scope.messages = {};
+    $scope.users = {};
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
+    $scope.receivers = [];
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+
+    this.$onInit = function () {
+        $scope.messangers();
+    };
+
+    $scope.messangers = function()
+    {
+        MessageService.getMessengers().then( function( response )
+        {
+            $scope.users = response.data;
+
+            if( $scope.users.length ){
+                $scope.friendId = $scope.users[0].id;
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+
+        });
+    };
+
+    $scope.getMessagesFromUser = function( id )
+    {
+        $scope.friendId = id;
+        MessageService.getMessages( id ).then( function( response )
+        {
+            $scope.messages = response;
+
+
+        });
+    };
+
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.friendId;
+
+        MessageService.send( $scope.message ).then(function(response){
+            $scope.messageBody = "";
+            $scope.getMessagesFromUser( $scope.friendId );
+            $scope.userSearchOpen = false;
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
+    };
+    
+    $scope.newMessage = function () {
+        $scope.userSearchOpen = true;
+        $scope.friendId = undefined;
+        $scope.messages = {};
+    }
+
+
+
+    $scope.search = function()
+    {                console.log( $scope.searchKey);
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+
+    $scope.selectUser = function( user )
+    {
+        $scope.searchKey = user.name + ' ' + user.surname;
+        $scope.friendId = user.id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+
+    //$(window).scroll(function() {
+
+
+
+    //});
+
+    
+}]);
+messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
+    {
+        var MessageService = {
+
+            send: function(message)
+            {
+                var deferred = $q.defer();
+                $http.post( '/api/messages', message )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response.data );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            getMessengers:  function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messengers' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getMessages: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            markReaded: function( message )
+            {
+                var deferred = $q.defer();
+                var data = {
+                    readed: message.readed
+                };
+                $http.put( '/api/messages/' + message.id, data )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            getNewMessages: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/new-messages/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            loadMore: function( id, currentPage )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id, { params: { currentPage: currentPage } } )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            }
+        };
+        return MessageService;
+    }] );
 user.component( 'friends', {
     templateUrl: '/api/view/modules.users.api.friends',
     controller: 'FriendsController',
@@ -1412,188 +1450,6 @@ app.component( 'userInfo', {
         id: '<'
     }
 })
-user.service( 'UserService', ['$http', '$q', function( $http, $q )
-    {
-
-        var UserService = {
-
-            getUser:  function( id, details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id,
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            updateUser: function ( id, user ) {
-                var deferred = $q.defer();
-                $http.put( '/api/users/' + id,
-                    {
-                        params: user
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-
-            onlineUsers:  function( details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/online',
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            getFriends:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            changeStatus: function( id, status )
-             {
-                 var deferred = $q.defer();
-                 var data = {
-                     id: id,
-                     status: status
-                 };
-                 $http.post( '/api/friends', data )
-                     .success( function( response )
-                     {
-                         deferred.resolve( response );
-                     } )
-                     .error( function()
-                     {
-                         deferred.reject();
-                     } );
-
-                 return deferred.promise;
-             },
-
-            getStatus: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friend/status/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            invitations: function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getGuests:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/guests')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getEvents:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/events')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return UserService;
-    }] );
 user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
     function ( UserService, $scope, $rootScope ) {
 
@@ -1777,4 +1633,186 @@ user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams',
         };
 
     }]);
+user.service( 'UserService', ['$http', '$q', function( $http, $q )
+    {
+
+        var UserService = {
+
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            updateUser: function ( id, user ) {
+                var deferred = $q.defer();
+                $http.put( '/api/users/' + id,
+                    {
+                        params: user
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getFriends:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            changeStatus: function( id, status )
+             {
+                 var deferred = $q.defer();
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
+                     .success( function( response )
+                     {
+                         deferred.resolve( response );
+                     } )
+                     .error( function()
+                     {
+                         deferred.reject();
+                     } );
+
+                 return deferred.promise;
+             },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            invitations: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/invitations' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getGuests:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/guests')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getEvents:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/events')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return UserService;
+    }] );
 //# sourceMappingURL=all.js.map
