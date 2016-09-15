@@ -60,6 +60,19 @@ class FriendsRepository extends Repository implements FriendsRepositoryInterface
             })->where('friendship', '1')->get();
     }
 
+    public function friendsOnline( $fields )
+    {
+        return $this->model
+            ->join('users', function ($join) {
+                $join->on( 'users.id', '=', 'friends.friend_id')
+                     ->where( 'friends.user_id', '=', \Auth::id() )
+                     ->orOn( 'users.id', '=', 'friends.user_id')
+                     ->where( 'friends.friend_id', '=', \Auth::id() );
+            })->where( 'users.online', 1 )
+            ->where('friends.friendship', '1')
+            ->get();
+    }
+
     public function invitations()
     {
         return $this->model

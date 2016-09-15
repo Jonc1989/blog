@@ -15,6 +15,10 @@ var app = angular.module( 'app', [
         {
             $httpProvider.interceptors.push('HttpInterceptor');
         }]);
+app.component( 'auth', {
+    templateUrl: '/api/view/layouts.api.auth',
+    controller: 'AuthController',
+});
 app.component( 'menuComponent', {
     templateUrl: '/api/view/layouts.api.menu',
     controller: 'MenuController',
@@ -22,6 +26,22 @@ app.component( 'menuComponent', {
         authId: '<'
     }
 })
+app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
+
+    $scope.EMAIL = ValidationService.email;
+
+    
+    this.$onInit = function () {
+        console.log( $scope.email );
+    };
+    
+    
+    $scope.blurEmail = function (email) {
+        console.log( $scope );
+    };
+
+}]);
+
 app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', function( $scope, SocketFactory, MessageService ) {
 
     $scope.authId = null;
@@ -173,9 +193,33 @@ app.factory('SocketFactory', function ($rootScope) {
         }
     };
 });
+app.factory( 'ValidationService', [ function()
+    {
+        var ValidationService = {
+            email:              /^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!\.)){0,61}[a-zA-Z0-9_-]?\.)+[a-zA-Z0-9_](?:[a-zA-Z0-9_\-](?!$)){0,61}[a-zA-Z0-9_]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/,
+            password:           /(?=.*[a-z])(?=.*[A-Z]).{6,}|(?=.*[a-zA-Z])(?=.*[1-9]).{6,}/,
+            passwordOrEmpty:    /(^$)|(?=.*[a-z])(?=.*[A-Z]).{6,}|(?=.*[a-zA-Z])(?=.*[1-9]).{6,}/,
+            classificatorName:  /^[0-9a-zāčēģīķļņōŗšūžA-ZĀČĒĢĪĶĻŅŌŖŠŪŽ\s]{3,60}$/,
+            globalTextValue:    /^[A-ZĀČĒĢĪĶĻŅŌŖŠŪŽa-zāčēģīķļņōŗšūž0-9 .,!?\-]{2,}$/,
+            number:             /^[0-9]{1,}/,
+            fullName:           /^[A-ZĀČĒĢĪĶĻŅŌŖŠŪŽa-zāčēģīķļņōŗšūž]{2,60} [A-ZĀČĒĢĪĶĻŅŌŖŠŪŽa-zāčēģīķļņōŗšūž]{2,60}$/,
+            clientName:         /^[A-ZĀČĒĢĪĶĻŅŌŖŠŪŽa-zāčēģīķļņōŗšūž ]{2,60}$/,
+            personalCode:       /^[0-9]{6}-[0-9]{5}$/,
+            companyName:        /^[A-ZĀČĒĢĪĶĻŅŌŖŠŪŽa-zāčēģīķļņōŗšūž\s]{3,}$/,
+            registrationNumber: /^[A-Z0-9]{5,}$/,
+            phone:              /^[0-9]{8}$/,
+            clock:              /^(?:0?[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/,
+        };
+
+        return ValidationService;
+    }] );
 var comments = angular.module('comments', [
 
 ])
+var home = angular.module('home', [
+
+]);
+
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -209,10 +253,6 @@ var galleries = angular.module('galleries', [
 
 
 }]);
-
-var home = angular.module('home', [
-
-]);
 
 var post = angular.module('posts', [
 
@@ -408,6 +448,139 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -726,139 +899,23 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
+post.component( 'like', {
+    templateUrl: '/api/view/modules.posts.api.like',
+    controller: 'LikeController',
     bindings: {
-        id: '<'
+        likes: '<',
+        authId: '<',
+        postId: '@',
+        type: '<'
     }
 })
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-        
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
-        {
-            $scope.users = response;
-        });
+post.component( 'posts', {
+    templateUrl: '/api/view/modules.posts.api.posts',
+    controller: 'PostController',
+    bindings: {
+        authId: '<'
     }
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
+})
 post.controller( 'LikeController', ['$scope', 'PostService', 'SocketFactory', function ( $scope, PostService, SocketFactory ) {
         
     $scope.likeStatus = false;
@@ -1067,23 +1124,6 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
 }]);
-post.component( 'like', {
-    templateUrl: '/api/view/modules.posts.api.like',
-    controller: 'LikeController',
-    bindings: {
-        likes: '<',
-        authId: '<',
-        postId: '@',
-        type: '<'
-    }
-})
-post.component( 'posts', {
-    templateUrl: '/api/view/modules.posts.api.posts',
-    controller: 'PostController',
-    bindings: {
-        authId: '<'
-    }
-})
 post.service( 'PostService', ['$http', '$q', function( $http, $q )
     {
         var PostService = {

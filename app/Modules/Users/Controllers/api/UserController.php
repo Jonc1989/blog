@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Controllers\api;
 
+use App\Modules\Friends\Repositories\FriendsRepositoryInterface;
 use App\Modules\Users\Repositories\EventRepositoryInterface;
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
 use App\Modules\Users\Repositories\VisitorRepositoryInterface;
@@ -16,12 +17,17 @@ class UserController extends ApiController
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user, VisitorRepositoryInterface $visitors,
-            EventRepositoryInterface $events )
+    public function __construct( 
+	    UsersRepositoryInterface $user, 
+	    VisitorRepositoryInterface $visitors,
+        EventRepositoryInterface $events,
+		FriendsRepositoryInterface $friends 
+    )
     {
         $this->user = $user;
         $this->visitors = $visitors;
         $this->events = $events;
+	    $this->friends = $friends;
     }
 
     /**
@@ -115,7 +121,7 @@ class UserController extends ApiController
     public function online()
     {
         count(Input::all()) > 0 ? $fields = Input::all() : $fields = ['*'];
-        return $this->user->onlineUsers( $fields );
+        return $this->friends->friendsOnline( $fields );
     }
     
     public function guests( $id )

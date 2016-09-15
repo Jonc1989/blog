@@ -12,6 +12,8 @@ interface FriendsRepositoryInterface
 
     public function userFriends( $id );
 
+    public function friendsOnline( $fields );
+
     public function invitations();
     
 }
