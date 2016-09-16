@@ -9,4 +9,6 @@ interface VisitorRepositoryInterface
 
     public function allGuests( $id );
 
+    public function makeVisitor( $id );
+
 }

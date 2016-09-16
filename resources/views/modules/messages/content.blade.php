@@ -1,6 +1,6 @@
 <div class="col-md-12">
     <div id="messages-wrap">
-        <div ng-repeat="message in messages.data"
+        <div ng-repeat="message in messages"
              scroll
              id="msg_{{message.id}}"
              parent="messages-wrap"

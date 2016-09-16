@@ -3,8 +3,9 @@
 namespace App\Modules\Users\Controllers;
 
 use App\Modules\Users\Repositories\UsersRepositoryInterface;
+use App\Modules\Users\Repositories\VisitorRepositoryInterface;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Input;
@@ -16,10 +17,11 @@ class UserController extends Controller
      *
      * @return void
      */
-    public function __construct( UsersRepositoryInterface $user )
+    public function __construct( UsersRepositoryInterface $user, VisitorRepositoryInterface $visitors )
     {
         //$this->middleware('auth');
         $this->user = $user;
+	    $this->visitors = $visitors;
         \Blade::setEscapedContentTags( '<%%', '%%>' );
         \Blade::setContentTags( '<%', '%>' );
     }
@@ -62,6 +64,9 @@ class UserController extends Controller
      */
     public function show($id)
     {
+        if( $id != Auth::id() ){
+	        $this->visitors->makeVisitor( $id );
+        }
         return view('modules.users.user')->with( 'id', $id );
     }
 
@@ -104,8 +109,8 @@ class UserController extends Controller
      */
     public function logout()
     {
-        $this->user->updateOnlineStats(\Auth::user()->id, 0);
-        \Auth::logout();
+        $this->user->updateOnlineStats( Auth::user()->id, 0);
+        Auth::logout();
         return redirect(property_exists($this, 'redirectAfterLogout') ? $this->redirectAfterLogout : '/');
     }
 }

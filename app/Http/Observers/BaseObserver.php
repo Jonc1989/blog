@@ -21,26 +21,28 @@ class BaseObserver
             'revisionable_model'    => $class->getName(),
             'type'                  => strtolower( $class->getShortName() ),
             'event_id'              => $model->id,
-            'user_id'               => \Auth::id()
-        ]);
+            'user_id'               => \Auth::id(),
+            'action'                   => 'create'
+        ]);     
+
     }
 
     
     public function updated( $user )
     {
-
+        \Log::info( 'updatedd' );
     }
 
     
-    public function saved( $user )
-    {
-
-    }
+//    public function saved( $user )
+//    {
+//        \Log::info( 'savedd' );
+//    }
 
    
     public function deleted( $user )
     {
-
+        \Log::info( 'deletedd' );
     }
     
 }

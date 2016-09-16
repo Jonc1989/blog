@@ -36,6 +36,8 @@ class UsersRepository extends Repository implements UsersRepositoryInterface
         $user->online = $online;
         $user->save();
     }
+
+    
     
 //    public function onlineUsers( $details )
 //    {

@@ -8,7 +8,7 @@ interface MessagesRepositoryInterface
 
     public function messengers();
 
-    public function messages( $id );
+    public function messages( $id, $per_page, $current_page  );
     
     public function getNewMessagesCount( $id );
 

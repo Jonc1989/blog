@@ -2,7 +2,7 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     $scope.friendId = null;
     $scope.userSearchOpen = false;
-    $scope.messages = {};
+    $scope.messages = [];
     $scope.users = {};
     $scope.disabled = true;
     $scope.message = {
@@ -12,6 +12,14 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     $scope.receivers = [];
     $scope.searchKey = '';
     $scope.searchResults = [];
+
+    $scope.current_page = 1;
+    $scope.total = 0;
+    $scope.last_page = undefined;
+    $scope.next_page = 1;
+    $scope.per_page = 10;
+    $scope.loading = false;
+
 
     this.$onInit = function () {
         $scope.messangers();
@@ -33,12 +41,22 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     $scope.getMessagesFromUser = function( id )
     {
+        $scope.loading = true;
         $scope.friendId = id;
-        MessageService.getMessages( id ).then( function( response )
+        MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
         {
-            $scope.messages = response;
+            //$scope.messages = response;
+            response.data.forEach(function (message) {
+                $scope.messages.push( message );
+            });
 
-
+            $scope.next_page = response.current_page + 1;
+            $scope.per_page = response.per_page;
+            $scope.current_page = response.current_page;
+            $scope.last_page = response.last_page;
+            $scope.total = response.total;
+console.log(response)
+            $scope.loading = false;
         });
     };
 
@@ -96,11 +114,13 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
         $('#search-results').show();
     }
 
-    //$(window).scroll(function() {
-
-
-
-    //});
+    $(window).scroll(function() {
+        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
+            if($scope.current_page != $scope.last_page){
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+        }
+    });
 
     
 }]);

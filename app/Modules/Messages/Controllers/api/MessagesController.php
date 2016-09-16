@@ -73,7 +73,9 @@ class MessagesController extends ApiController {
 	 */
 	public function show($id)
 	{
-        return $this->respond( $this->message->messages( $id ) );
+		Input::get('per_page') != null ?  $per_page = Input::get('per_page') : $per_page = 15;
+		Input::get('current') != null ?  $current_page = Input::get('current') : $current_page = 1;
+        return $this->respond( $this->message->messages( $id, $per_page, $current_page ) );
 	}
 
 	/**

@@ -32,7 +32,7 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
         return $data;
     }
 
-    public function messages( $id )
+    public function messages( $id, $per_page, $current_page  )
     {
         //DB::enableQueryLog();
         return $this->model
@@ -42,22 +42,9 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
             ->orWhere('receiver_id', '=', $id )
             ->where('sender_id', \Auth::user()->id )
             ->with([ 'receivers', 'senders'])
-
-//            ->join('users as a', function ($join) use ( $id ) {
-//                $join->on( 'a.id', '=', 'messages.sender_id')
-//                    ->where( 'messages.sender_id', '=', $id)
-//                    ->where( 'messages.receiver_id', '=', \Auth::user()->id );
-//            })
-//
-//            ->join('users as b', function ($join) use ( $id ) {
-//                $join->on( 'b.id', '=', 'messages.receiver_id')
-//                    ->where( 'messages.receiver_id', '=', $id )
-//                    ->where( 'messages.sender_id', '=', \Auth::user()->id );
-//            })
-
-
+            
             ->orderBy('created_at', 'DESC')
-            ->paginate();
+            ->paginate($per_page, ['*'], '', $current_page);
 
 //        \Log::info( DB::getQueryLog() );
     }

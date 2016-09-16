@@ -1,7 +1,7 @@
 user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
     function ( UserService, $scope, $stateParams, $rootScope ) {
 
-        $scope.guests = [];
+        $scope.users = [];
         $scope.id = null;
 
         this.$onInit = function () {
@@ -9,7 +9,7 @@ user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams',
             UserService.getGuests( $scope.id ).then( function( response )
             {
                 console.log(response);
-                $scope.guests = response.data;
+                $scope.users = response.data;
             });
         };
 

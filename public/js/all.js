@@ -15,62 +15,6 @@ var app = angular.module( 'app', [
         {
             $httpProvider.interceptors.push('HttpInterceptor');
         }]);
-app.component( 'auth', {
-    templateUrl: '/api/view/layouts.api.auth',
-    controller: 'AuthController',
-});
-app.component( 'menuComponent', {
-    templateUrl: '/api/view/layouts.api.menu',
-    controller: 'MenuController',
-    bindings: {
-        authId: '<'
-    }
-})
-app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
-
-    $scope.EMAIL = ValidationService.email;
-
-    
-    this.$onInit = function () {
-        console.log( $scope.email );
-    };
-    
-    
-    $scope.blurEmail = function (email) {
-        console.log( $scope );
-    };
-
-}]);
-
-app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', function( $scope, SocketFactory, MessageService ) {
-
-    $scope.authId = null;
-    $scope.messageCount = null;
-    this.$onInit = function () {
-        if( this.authId !== undefined ){
-            $scope.authId = this.authId;
-            $scope.getMessageCount();
-
-            SocketFactory.on('message-sent', function (data) {
-                if( data.receiver == $scope.authId ){
-                    $scope.getMessageCount()
-                }
-            });
-            SocketFactory.on('message-readed', function (data) {
-                if( data.receiver == $scope.authId ){
-                    $scope.getMessageCount()
-                }
-            });
-        }
-    };
-
-    $scope.getMessageCount = function () {
-        MessageService.getNewMessages( $scope.authId ).then(function ( response ) {
-            $scope.messageCount = response;
-        });
-    }
-}]);
-
 app.directive('map', function () {
     return {
         link: function(scope, elem, attrs) {
@@ -124,6 +68,72 @@ app.directive("scroll", [ 'MessageService', function ( MessageService ) {
     }
 
 }])
+app.component( 'auth', {
+    templateUrl: '/api/view/layouts.api.auth',
+    controller: 'AuthController',
+});
+app.component( 'menuComponent', {
+    templateUrl: '/api/view/layouts.api.menu',
+    controller: 'MenuController',
+    bindings: {
+        authId: '<'
+    }
+})
+app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
+
+    $scope.EMAIL = ValidationService.email;
+    $scope.PASSWORD = ValidationService.password;
+    $scope.formData = {};
+    $scope.loading = false;
+
+    this.$onInit = function () {
+
+    };
+    
+    
+    $scope.blurEmail = function () {
+    };
+
+    $scope.onSubmit = function ($event)
+    {
+        if( $scope.form.$valid && !$scope.loading )
+        {
+            $scope.loading = true;            
+        }else {
+            $event.preventDefault();
+        }
+    };
+}]);
+
+app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', function( $scope, SocketFactory, MessageService ) {
+
+    $scope.authId = null;
+    $scope.messageCount = null;
+    this.$onInit = function () {
+        if( this.authId !== undefined ){
+            $scope.authId = this.authId;
+            $scope.getMessageCount();
+
+            SocketFactory.on('message-sent', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+            SocketFactory.on('message-readed', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+        }
+    };
+
+    $scope.getMessageCount = function () {
+        MessageService.getNewMessages( $scope.authId ).then(function ( response ) {
+            $scope.messageCount = response;
+        });
+    }
+}]);
+
 app.factory('HttpInterceptor', function($q) {
     return {
         // optional method
@@ -216,10 +226,6 @@ app.factory( 'ValidationService', [ function()
 var comments = angular.module('comments', [
 
 ])
-var home = angular.module('home', [
-
-]);
-
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -254,7 +260,7 @@ var galleries = angular.module('galleries', [
 
 }]);
 
-var post = angular.module('posts', [
+var home = angular.module('home', [
 
 ]);
 
@@ -283,6 +289,10 @@ var messages = angular.module('messages', [
         //         }
         //     });
     });
+
+var post = angular.module('posts', [
+
+]);
 
 var user = angular.module('users', [ ])
     .config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -448,139 +458,6 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-        
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    }
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -899,6 +776,407 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
+
+    $scope.friendId = null;
+    $scope.userSearchOpen = false;
+    $scope.messages = [];
+    $scope.users = {};
+    $scope.disabled = true;
+    $scope.message = {
+        messageText: "",
+        receiver: ""
+    };
+    $scope.receivers = [];
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+
+    $scope.current_page = 1;
+    $scope.total = 0;
+    $scope.last_page = undefined;
+    $scope.next_page = 1;
+    $scope.per_page = 10;
+    $scope.loading = false;
+
+
+    this.$onInit = function () {
+        $scope.messangers();
+    };
+
+    $scope.messangers = function()
+    {
+        MessageService.getMessengers().then( function( response )
+        {
+            $scope.users = response.data;
+
+            if( $scope.users.length ){
+                $scope.friendId = $scope.users[0].id;
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+
+        });
+    };
+
+    $scope.getMessagesFromUser = function( id )
+    {
+        $scope.loading = true;
+        $scope.friendId = id;
+        MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
+        {
+            //$scope.messages = response;
+            response.data.forEach(function (message) {
+                $scope.messages.push( message );
+            });
+
+            $scope.next_page = response.current_page + 1;
+            $scope.per_page = response.per_page;
+            $scope.current_page = response.current_page;
+            $scope.last_page = response.last_page;
+            $scope.total = response.total;
+console.log(response)
+            $scope.loading = false;
+        });
+    };
+
+    $scope.sendMessage = function()
+    {
+        $scope.message.messageText = $scope.messageBody;
+        $scope.message.receiver = $scope.friendId;
+
+        MessageService.send( $scope.message ).then(function(response){
+            $scope.messageBody = "";
+            $scope.getMessagesFromUser( $scope.friendId );
+            $scope.userSearchOpen = false;
+        });
+    };
+
+    $scope.checkMessageBody = function () {
+        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
+    };
+    
+    $scope.newMessage = function () {
+        $scope.userSearchOpen = true;
+        $scope.friendId = undefined;
+        $scope.messages = {};
+    }
+
+
+
+    $scope.search = function()
+    {                console.log( $scope.searchKey);
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+
+    $scope.selectUser = function( user )
+    {
+        $scope.searchKey = user.name + ' ' + user.surname;
+        $scope.friendId = user.id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+
+    $(window).scroll(function() {
+        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
+            if($scope.current_page != $scope.last_page){
+                $scope.getMessagesFromUser( $scope.friendId );
+            }
+        }
+    });
+
+    
+}]);
+messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
+    {
+        var MessageService = {
+
+            send: function(message)
+            {
+                var deferred = $q.defer();
+                $http.post( '/api/messages', message )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response.data );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            getMessengers:  function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messengers' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getMessages: function( id, perPage, current )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id, { params: {per_page: perPage, current: current}} )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            markReaded: function( message )
+            {
+                var deferred = $q.defer();
+                var data = {
+                    readed: message.readed
+                };
+                $http.put( '/api/messages/' + message.id, data )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            getNewMessages: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/new-messages/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            },
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            loadMore: function( id, currentPage )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/messages/' + id, { params: { currentPage: currentPage } } )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        if ( status == 422 )
+                        {
+                            deferred.resolve( { errors: response } );
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+            }
+        };
+        return MessageService;
+    }] );
 post.component( 'like', {
     templateUrl: '/api/view/modules.posts.api.like',
     controller: 'LikeController',
@@ -1207,254 +1485,6 @@ post.service( 'PostService', ['$http', '$q', function( $http, $q )
         };
         return PostService;
     }] );
-messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
-
-    $scope.friendId = null;
-    $scope.userSearchOpen = false;
-    $scope.messages = {};
-    $scope.users = {};
-    $scope.disabled = true;
-    $scope.message = {
-        messageText: "",
-        receiver: ""
-    };
-    $scope.receivers = [];
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-
-    this.$onInit = function () {
-        $scope.messangers();
-    };
-
-    $scope.messangers = function()
-    {
-        MessageService.getMessengers().then( function( response )
-        {
-            $scope.users = response.data;
-
-            if( $scope.users.length ){
-                $scope.friendId = $scope.users[0].id;
-                $scope.getMessagesFromUser( $scope.friendId );
-            }
-
-        });
-    };
-
-    $scope.getMessagesFromUser = function( id )
-    {
-        $scope.friendId = id;
-        MessageService.getMessages( id ).then( function( response )
-        {
-            $scope.messages = response;
-
-
-        });
-    };
-
-    $scope.sendMessage = function()
-    {
-        $scope.message.messageText = $scope.messageBody;
-        $scope.message.receiver = $scope.friendId;
-
-        MessageService.send( $scope.message ).then(function(response){
-            $scope.messageBody = "";
-            $scope.getMessagesFromUser( $scope.friendId );
-            $scope.userSearchOpen = false;
-        });
-    };
-
-    $scope.checkMessageBody = function () {
-        $scope.messageBody != '' ? $scope.disabled = false : $scope.disabled = true;
-    };
-    
-    $scope.newMessage = function () {
-        $scope.userSearchOpen = true;
-        $scope.friendId = undefined;
-        $scope.messages = {};
-    }
-
-
-
-    $scope.search = function()
-    {                console.log( $scope.searchKey);
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-
-    $scope.selectUser = function( user )
-    {
-        $scope.searchKey = user.name + ' ' + user.surname;
-        $scope.friendId = user.id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-
-    //$(window).scroll(function() {
-
-
-
-    //});
-
-    
-}]);
-messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
-    {
-        var MessageService = {
-
-            send: function(message)
-            {
-                var deferred = $q.defer();
-                $http.post( '/api/messages', message )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response.data );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            getMessengers:  function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messengers' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getMessages: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messages/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            markReaded: function( message )
-            {
-                var deferred = $q.defer();
-                var data = {
-                    readed: message.readed
-                };
-                $http.put( '/api/messages/' + message.id, data )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            getNewMessages: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/new-messages/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            },
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            loadMore: function( id, currentPage )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/messages/' + id, { params: { currentPage: currentPage } } )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        if ( status == 422 )
-                        {
-                            deferred.resolve( { errors: response } );
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-            }
-        };
-        return MessageService;
-    }] );
 user.component( 'friends', {
     templateUrl: '/api/view/modules.users.api.friends',
     controller: 'FriendsController',
@@ -1660,7 +1690,7 @@ user.controller( 'UserMessageSenderController', [ 'MessageService', '$scope', fu
 user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams', '$rootScope',
     function ( UserService, $scope, $stateParams, $rootScope ) {
 
-        $scope.guests = [];
+        $scope.users = [];
         $scope.id = null;
 
         this.$onInit = function () {
@@ -1668,7 +1698,7 @@ user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams',
             UserService.getGuests( $scope.id ).then( function( response )
             {
                 console.log(response);
-                $scope.guests = response.data;
+                $scope.users = response.data;
             });
         };
 

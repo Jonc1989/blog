@@ -39,10 +39,10 @@ messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
                 return deferred.promise;
 
             },
-            getMessages: function( id )
+            getMessages: function( id, perPage, current )
             {
                 var deferred = $q.defer();
-                $http.get( '/api/messages/' + id )
+                $http.get( '/api/messages/' + id, { params: {per_page: perPage, current: current}} )
                     .success( function( response )
                     {
                         deferred.resolve( response );

@@ -15,7 +15,7 @@ class Visitors extends Model
         'id', 'user_id', 'visitor_id', 'created_at', 'updated_at'
     ];
 
-    public function user()
+    public function visitor()
     {
         return $this->belongsTo('App\Modules\Users\Models\User', 'visitor_id');
     }

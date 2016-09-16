@@ -16,7 +16,20 @@ class VisitorRepository extends Repository implements VisitorRepositoryInterface
 
     public function allGuests( $id )
     {
-        return $this->model->where( 'user_id', $id )->with( 'user' )->paginate();
+        return $this->model->where( 'user_id', $id )->with( 'visitor' )->paginate();
+    }
+
+    public function makeVisitor( $id )
+    {
+        $data = $this->model->firstOrNew( [
+            'user_id'       => $id,
+            'visitor_id'    => \Auth::id()
+        ]);
+
+        $data->save();
+        $data->touch();
+
+        return true;
     }
    
 }
