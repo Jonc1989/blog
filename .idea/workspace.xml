@@ -2,33 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0de95eb0-9ae6-460a-b9b7-72dddbc67512" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Controllers/Auth/AuthController.php" afterPath="$PROJECT_DIR$/app/Http/Controllers/Auth/AuthController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Models/Events.php" afterPath="$PROJECT_DIR$/app/Http/Models/Events.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Http/Observers/BaseObserver.php" afterPath="$PROJECT_DIR$/app/Http/Observers/BaseObserver.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Friends/Listeners/FriendObserver.php" afterPath="$PROJECT_DIR$/app/Modules/Friends/Listeners/FriendObserver.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Friends/Models/Friends.php" afterPath="$PROJECT_DIR$/app/Modules/Friends/Models/Friends.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Friends/Repositories/FriendsRepository.php" afterPath="$PROJECT_DIR$/app/Modules/Friends/Repositories/FriendsRepository.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Messages/Controllers/api/MessagesController.php" afterPath="$PROJECT_DIR$/app/Modules/Messages/Controllers/api/MessagesController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepository.php" afterPath="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepository.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepositoryInterface.php" afterPath="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepositoryInterface.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Controllers/UserController.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Controllers/UserController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Controllers/api/UserController.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Controllers/api/UserController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Models/Visitors.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Models/Visitors.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Repositories/UsersRepository.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Repositories/UsersRepository.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Repositories/UsersRepositoryInterface.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Repositories/UsersRepositoryInterface.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Repositories/VisitorRepository.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Repositories/VisitorRepository.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/Modules/Users/Repositories/VisitorRepositoryInterface.php" afterPath="$PROJECT_DIR$/app/Modules/Users/Repositories/VisitorRepositoryInterface.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/js/all.js" afterPath="$PROJECT_DIR$/public/js/all.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/js/all.js.map" afterPath="$PROJECT_DIR$/public/js/all.js.map" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/assets/js/controllers/AuthController.js" afterPath="$PROJECT_DIR$/resources/assets/js/controllers/AuthController.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js" afterPath="$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/assets/js/modules/messages/services/MessageService.js" afterPath="$PROJECT_DIR$/resources/assets/js/modules/messages/services/MessageService.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/assets/js/modules/users/controllers/VisitorController.js" afterPath="$PROJECT_DIR$/resources/assets/js/modules/users/controllers/VisitorController.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/layouts/api/auth.blade.php" afterPath="$PROJECT_DIR$/resources/views/layouts/api/auth.blade.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/modules/messages/content.blade.php" afterPath="$PROJECT_DIR$/resources/views/modules/messages/content.blade.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/modules/users/api/events.blade.php" afterPath="$PROJECT_DIR$/resources/views/modules/users/api/events.blade.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/resources/views/modules/users/api/visitors.blade.php" afterPath="$PROJECT_DIR$/resources/views/modules/users/api/visitors.blade.php" />
     </list>
     <ignored path="blog.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -53,14 +27,14 @@
       <file leaf-file-name="MessagesController.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1011">
-              <caret line="36" column="13" selection-start-line="33" selection-start-column="10" selection-end-line="36" selection-end-column="13" />
+            <state relative-caret-position="191">
+              <caret line="34" column="31" selection-start-line="34" selection-start-column="23" selection-end-line="34" selection-end-column="31" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MessageService.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="MessageService.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/resources/assets/js/modules/messages/services/MessageService.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="273">
@@ -80,11 +54,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="content.blade.php" pinned="false" current-in-tab="false">
+      <file leaf-file-name="content.blade.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/resources/views/modules/messages/content.blade.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="43" selection-start-line="2" selection-start-column="43" selection-end-line="2" selection-end-column="43" />
+            <state relative-caret-position="219">
+              <caret line="13" column="34" selection-start-line="13" selection-start-column="34" selection-end-line="13" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -103,8 +77,8 @@
       <file leaf-file-name="Messages.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/Modules/Messages/Models/Messages.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="22" column="75" selection-start-line="22" selection-start-column="75" selection-end-line="22" selection-end-column="75" />
+            <state relative-caret-position="459">
+              <caret line="27" column="77" selection-start-line="27" selection-start-column="66" selection-end-line="27" selection-end-column="77" />
               <folding />
             </state>
           </provider>
@@ -182,10 +156,10 @@
         <option value="$PROJECT_DIR$/storage/logs/laravel.log" />
         <option value="$PROJECT_DIR$/app/Modules/Messages/Controllers/api/MessagesController.php" />
         <option value="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepositoryInterface.php" />
-        <option value="$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js" />
         <option value="$PROJECT_DIR$/app/Modules/Messages/Repositories/MessagesRepository.php" />
         <option value="$PROJECT_DIR$/app/Modules/Messages/Models/Messages.php" />
         <option value="$PROJECT_DIR$/resources/assets/js/directives/scrool.js" />
+        <option value="$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js" />
         <option value="$PROJECT_DIR$/resources/views/modules/messages/content.blade.php" />
       </list>
     </option>
@@ -835,12 +809,12 @@
       <workItem from="1473942079100" duration="6509000" />
       <workItem from="1473948750182" duration="315000" />
       <workItem from="1474007760567" duration="7412000" />
-      <workItem from="1474022449621" duration="11902000" />
+      <workItem from="1474022449621" duration="13284000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="130404000" />
+    <option name="totallyTimeSpent" value="131786000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -1243,14 +1217,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/Modules/Messages/Models/Messages.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="75" selection-start-line="22" selection-start-column="75" selection-end-line="22" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/resources/assets/js/directives/scrool.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -1259,26 +1225,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/resources/views/modules/messages/content.blade.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="43" selection-start-line="2" selection-start-column="43" selection-end-line="2" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/Modules/Messages/Controllers/api/MessagesController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="350">
           <caret line="77" column="50" selection-start-line="77" selection-start-column="50" selection-end-line="77" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1011">
-          <caret line="36" column="13" selection-start-line="33" selection-start-column="10" selection-end-line="36" selection-end-column="13" />
           <folding />
         </state>
       </provider>
@@ -1295,6 +1245,30 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="43" column="42" selection-start-line="43" selection-start-column="42" selection-end-line="43" selection-end-column="42" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/assets/js/modules/messages/controllers/MessagesController.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="34" column="31" selection-start-line="34" selection-start-column="23" selection-end-line="34" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Modules/Messages/Models/Messages.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="459">
+          <caret line="27" column="77" selection-start-line="27" selection-start-column="66" selection-end-line="27" selection-end-column="77" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/resources/views/modules/messages/content.blade.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="219">
+          <caret line="13" column="34" selection-start-line="13" selection-start-column="34" selection-end-line="13" selection-end-column="34" />
           <folding />
         </state>
       </provider>
