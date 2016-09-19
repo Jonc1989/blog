@@ -1,4 +1,5 @@
-messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', 'SocketFactory', '$rootScope', 
+    function ( $scope, MessageService, UserService, SocketFactory, $rootScope ) {
 
     $scope.friendId = null;
     $scope.userSearchOpen = false;
@@ -23,7 +24,11 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     this.$onInit = function () {
         $scope.messangers();
-
+        SocketFactory.on('message-sent', function (data) {
+            if( data.receiver == $rootScope.authId ){
+                //$scope.paginateMessages(     $scope.friendId )
+            }
+        });
 
 
     };

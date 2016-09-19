@@ -15,61 +15,6 @@ var app = angular.module( 'app', [
         {
             $httpProvider.interceptors.push('HttpInterceptor');
         }]);
-app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
-
-    $scope.EMAIL = ValidationService.email;
-    $scope.PASSWORD = ValidationService.password;
-    $scope.formData = {};
-    $scope.loading = false;
-
-    this.$onInit = function () {
-
-    };
-    
-    
-    $scope.blurEmail = function () {
-    };
-
-    $scope.onSubmit = function ($event)
-    {
-        if( $scope.form.$valid && !$scope.loading )
-        {
-            $scope.loading = true;            
-        }else {
-            $event.preventDefault();
-        }
-    };
-}]);
-
-app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', function( $scope, SocketFactory, MessageService ) {
-
-    $scope.authId = null;
-    $scope.messageCount = null;
-    this.$onInit = function () {
-        if( this.authId !== undefined ){
-            $scope.authId = this.authId;
-            $scope.getMessageCount();
-
-            SocketFactory.on('message-sent', function (data) {
-                if( data.receiver == $scope.authId ){
-                    $scope.getMessageCount()
-                }
-            });
-            SocketFactory.on('message-readed', function (data) {
-                if( data.receiver == $scope.authId ){
-                    $scope.getMessageCount()
-                }
-            });
-        }
-    };
-
-    $scope.getMessageCount = function () {
-        MessageService.getNewMessages( $scope.authId ).then(function ( response ) {
-            $scope.messageCount = response;
-        });
-    }
-}]);
-
 app.component( 'auth', {
     templateUrl: '/api/view/layouts.api.auth',
     controller: 'AuthController',
@@ -134,6 +79,62 @@ app.directive("scroll", [ 'MessageService', function ( MessageService ) {
     }
 
 }])
+app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
+
+    $scope.EMAIL = ValidationService.email;
+    $scope.PASSWORD = ValidationService.password;
+    $scope.formData = {};
+    $scope.loading = false;
+
+    this.$onInit = function () {
+
+    };
+    
+    
+    $scope.blurEmail = function () {
+    };
+
+    $scope.onSubmit = function ($event)
+    {
+        if( $scope.form.$valid && !$scope.loading )
+        {
+            $scope.loading = true;            
+        }else {
+            $event.preventDefault();
+        }
+    };
+}]);
+
+app.controller('MenuController', ['$scope', '$rootScope', 'SocketFactory', 'MessageService', function( $scope, $rootScope, SocketFactory, MessageService ) {
+
+    $scope.authId = null;
+    $scope.messageCount = null;
+    this.$onInit = function () {
+        if( this.authId !== undefined ){
+            $scope.authId = this.authId;
+            $rootScope.authId = this.authId;
+            $scope.getMessageCount();
+
+            SocketFactory.on('message-sent', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+            SocketFactory.on('message-readed', function (data) {
+                if( data.receiver == $scope.authId ){
+                    $scope.getMessageCount()
+                }
+            });
+        }
+    };
+
+    $scope.getMessageCount = function () {
+        MessageService.getNewMessages( $scope.authId ).then(function ( response ) {
+            $scope.messageCount = response;
+        });
+    }
+}]);
+
 app.factory('HttpInterceptor', function($q) {
     return {
         // optional method
@@ -226,6 +227,10 @@ app.factory( 'ValidationService', [ function()
 var comments = angular.module('comments', [
 
 ])
+var home = angular.module('home', [
+
+]);
+
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -259,10 +264,6 @@ var galleries = angular.module('galleries', [
 
 
 }]);
-
-var home = angular.module('home', [
-
-]);
 
 var messages = angular.module('messages', [
 
@@ -393,6 +394,29 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         });
     };
 }]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
 {
 
@@ -458,164 +482,116 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
-galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
     {
-
-        var GalleriesService = {
-
-            upload: function (files, id)
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
             {
-                if (files && files.length)
-                {
-                    var deferred = $q.defer();
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
 
-                    for (var i = 0; i < files.length; i++)
-                    {
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
 
-                        var file = files[i];
-                        Upload.upload({
-                            url: '/api/save-gallery-images',
-                            data: id,
-                            file: file
-                        }).progress(function (evt) {
-
-                        }).success(function (response) {
-                            //console.log(response);
-                            deferred.resolve( response );
-                        }).error(function (response, status)
-                        {
-                            if (status === 422)
-                            {
-                                deferred.resolve({errors: response});
-                            } else
-                            {
-                                deferred.reject();
-                            }
-                        });
-
-                    }
-                    return deferred.promise;
-                }
-            },
-            save: function( name )
-            {
-                var deferred = $q.defer();
-                var data = {
-                    name: name
-                };
-                $http.post( '/api/galleries/', data )
-                    .success( function( response )
-                    {console.log();
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            all: function( auth )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/', { params: { auth: auth } } )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            // mine: function(id)
-            // {
-            //     var deferred = $q.defer();
-            //     $http.get( '/api/galleries/' + id)
-            //         .success( function( response )
-            //         {
-            //             deferred.resolve( response );
-            //         } )
-            //         .error( function( response, status )
-            //         {
-            //             if (status === 422)
-            //             {
-            //                 deferred.resolve({errors: response});
-            //             } else
-            //             {
-            //                 deferred.reject();
-            //             }
-            //         } );
-            //
-            //     return deferred.promise;
-            //
-            // },
-            gallery: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-            delete: function(id)
-            {
-                var deferred = $q.defer();
-                $http.delete( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-        };
-        return GalleriesService;
-    }] );
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -776,140 +752,166 @@ galleries.controller('MineGalleriesController', ['$scope', '$controller', functi
 
 }]);
 
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-        
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    }
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
+galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
     {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
+
+        var GalleriesService = {
+
+            upload: function (files, id)
             {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
+                if (files && files.length)
+                {
+                    var deferred = $q.defer();
 
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
+                    for (var i = 0; i < files.length; i++)
+                    {
 
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
-messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
+                        var file = files[i];
+                        Upload.upload({
+                            url: '/api/save-gallery-images',
+                            data: id,
+                            file: file
+                        }).progress(function (evt) {
+
+                        }).success(function (response) {
+                            //console.log(response);
+                            deferred.resolve( response );
+                        }).error(function (response, status)
+                        {
+                            if (status === 422)
+                            {
+                                deferred.resolve({errors: response});
+                            } else
+                            {
+                                deferred.reject();
+                            }
+                        });
+
+                    }
+                    return deferred.promise;
+                }
+            },
+            save: function( name )
+            {
+                var deferred = $q.defer();
+                var data = {
+                    name: name
+                };
+                $http.post( '/api/galleries/', data )
+                    .success( function( response )
+                    {console.log();
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            all: function( auth )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/', { params: { auth: auth } } )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            // mine: function(id)
+            // {
+            //     var deferred = $q.defer();
+            //     $http.get( '/api/galleries/' + id)
+            //         .success( function( response )
+            //         {
+            //             deferred.resolve( response );
+            //         } )
+            //         .error( function( response, status )
+            //         {
+            //             if (status === 422)
+            //             {
+            //                 deferred.resolve({errors: response});
+            //             } else
+            //             {
+            //                 deferred.reject();
+            //             }
+            //         } );
+            //
+            //     return deferred.promise;
+            //
+            // },
+            gallery: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            delete: function(id)
+            {
+                var deferred = $q.defer();
+                $http.delete( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+        };
+        return GalleriesService;
+    }] );
+messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', 'SocketFactory', '$rootScope', 
+    function ( $scope, MessageService, UserService, SocketFactory, $rootScope ) {
 
     $scope.friendId = null;
     $scope.userSearchOpen = false;
@@ -934,7 +936,11 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     this.$onInit = function () {
         $scope.messangers();
-
+        SocketFactory.on('message-sent', function (data) {
+            if( data.receiver == $rootScope.authId ){
+                //$scope.paginateMessages(     $scope.friendId )
+            }
+        });
 
 
     };
@@ -1547,6 +1553,188 @@ app.component( 'userInfo', {
         id: '<'
     }
 })
+user.service( 'UserService', ['$http', '$q', function( $http, $q )
+    {
+
+        var UserService = {
+
+            getUser:  function( id, details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id,
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            updateUser: function ( id, user ) {
+                var deferred = $q.defer();
+                $http.put( '/api/users/' + id,
+                    {
+                        params: user
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+            },
+
+            onlineUsers:  function( details )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/online',
+                    {
+                        params: details
+                    })
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getFriends:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            changeStatus: function( id, status )
+             {
+                 var deferred = $q.defer();
+                 var data = {
+                     id: id,
+                     status: status
+                 };
+                 $http.post( '/api/friends', data )
+                     .success( function( response )
+                     {
+                         deferred.resolve( response );
+                     } )
+                     .error( function()
+                     {
+                         deferred.reject();
+                     } );
+
+                 return deferred.promise;
+             },
+
+            getStatus: function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friend/status/' + id )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            search:  function(string)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/search/' + string )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            invitations: function()
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/friends/invitations' )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getGuests:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/guests')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+            getEvents:  function( id )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/users/' + id + '/events')
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return UserService;
+    }] );
 user.controller( 'EventController', [ 'UserService', '$scope', '$rootScope',
     function ( UserService, $scope, $rootScope ) {
 
@@ -1730,186 +1918,4 @@ user.controller( 'VisitorController', [ 'UserService', '$scope', '$stateParams',
         };
 
     }]);
-user.service( 'UserService', ['$http', '$q', function( $http, $q )
-    {
-
-        var UserService = {
-
-            getUser:  function( id, details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id,
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            updateUser: function ( id, user ) {
-                var deferred = $q.defer();
-                $http.put( '/api/users/' + id,
-                    {
-                        params: user
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-            },
-
-            onlineUsers:  function( details )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/online',
-                    {
-                        params: details
-                    })
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            getFriends:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            changeStatus: function( id, status )
-             {
-                 var deferred = $q.defer();
-                 var data = {
-                     id: id,
-                     status: status
-                 };
-                 $http.post( '/api/friends', data )
-                     .success( function( response )
-                     {
-                         deferred.resolve( response );
-                     } )
-                     .error( function()
-                     {
-                         deferred.reject();
-                     } );
-
-                 return deferred.promise;
-             },
-
-            getStatus: function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friend/status/' + id )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            search:  function(string)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/search/' + string )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            invitations: function()
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/friends/invitations' )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getGuests:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/guests')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-            getEvents:  function( id )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/users/' + id + '/events')
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return UserService;
-    }] );
 //# sourceMappingURL=all.js.map
