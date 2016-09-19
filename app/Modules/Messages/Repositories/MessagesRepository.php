@@ -34,8 +34,8 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
 
     public function messages( $id, $per_page, $current_page  )
     {
-        //DB::enableQueryLog();
-        return $this->model
+        DB::enableQueryLog();
+        $data = $this->model
             ->where( 'sender_id', '=', $id )
             ->where( 'receiver_id', \Auth::user()->id )
 
@@ -46,7 +46,9 @@ class MessagesRepository extends Repository implements MessagesRepositoryInterfa
             ->orderBy('created_at', 'DESC')
             ->paginate($per_page, ['*'], '', $current_page);
 
-//        \Log::info( DB::getQueryLog() );
+        \Log::info( DB::getQueryLog() );
+
+        return $data;
     }
     
     public function getNewMessagesCount( $id )

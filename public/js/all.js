@@ -15,70 +15,6 @@ var app = angular.module( 'app', [
         {
             $httpProvider.interceptors.push('HttpInterceptor');
         }]);
-app.directive('map', function () {
-    return {
-        link: function(scope, elem, attrs) {
-            var div= $('<div/>', { id: 'map_' + attrs.id });
-            $(elem).append( div );
-            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
-                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
-                zoom: 13,
-                mapTypeId: 'roadmap'
-            });
-        }
-    }
-});
-app.directive("scroll", [ 'MessageService', function ( MessageService ) {
-    return {
-        link: function(scope, element, attrs) {
-                setTimeout(function () {
-                    if( attrs.authId != scope.message.sender_id ){
-                        check();
-                        angular.element($('#' + attrs.parent )).bind("scroll", function() {
-                            check()
-                        });
-                        function check() {
-                            if( scope.message.readed == 0 ){
-                                var diff = $('#' + attrs.parent).offset().top + $('#' + attrs.parent).height();
-                                if ( diff > $( '#' + attrs.id).offset().top ) {
-
-                                    setAsReaded();
-
-                                }
-                            }
-                        }
-
-                        function setAsReaded() {
-                            setTimeout(function () {
-                                scope.message.readed = 1;
-                                MessageService.markReaded( scope.message ).then( function ( response ) {
-                                    //console.log( response )
-                                });
-                                if( !scope.$$phase )
-                                {
-                                    scope.$apply( function () {
-                                        scope.message.readed = 1;
-                                    });
-                                }
-                        }, 1000);
-                    }
-                }
-                },300);
-        }
-    }
-
-}])
-app.component( 'auth', {
-    templateUrl: '/api/view/layouts.api.auth',
-    controller: 'AuthController',
-});
-app.component( 'menuComponent', {
-    templateUrl: '/api/view/layouts.api.menu',
-    controller: 'MenuController',
-    bindings: {
-        authId: '<'
-    }
-})
 app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
 
     $scope.EMAIL = ValidationService.email;
@@ -134,6 +70,70 @@ app.controller('MenuController', ['$scope', 'SocketFactory', 'MessageService', f
     }
 }]);
 
+app.component( 'auth', {
+    templateUrl: '/api/view/layouts.api.auth',
+    controller: 'AuthController',
+});
+app.component( 'menuComponent', {
+    templateUrl: '/api/view/layouts.api.menu',
+    controller: 'MenuController',
+    bindings: {
+        authId: '<'
+    }
+})
+app.directive('map', function () {
+    return {
+        link: function(scope, elem, attrs) {
+            var div= $('<div/>', { id: 'map_' + attrs.id });
+            $(elem).append( div );
+            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
+                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
+                zoom: 13,
+                mapTypeId: 'roadmap'
+            });
+        }
+    }
+});
+app.directive("scroll", [ 'MessageService', function ( MessageService ) {
+    return {
+        link: function(scope, element, attrs) {
+                setTimeout(function () {
+                    if( attrs.authId != scope.message.sender_id ){
+                        check();
+                        angular.element($('#' + attrs.parent )).bind("scroll", function() {
+                            check()
+                        });
+                        function check() {
+                            if( scope.message.readed == 0 ){
+                                var diff = $('#' + attrs.parent).offset().top + $('#' + attrs.parent).height();
+                                if ( diff > $( '#' + attrs.id).offset().top ) {
+
+                                    setAsReaded();
+
+                                }
+                            }
+                        }
+
+                        function setAsReaded() {
+                            setTimeout(function () {
+                                scope.message.readed = 1;
+                                MessageService.markReaded( scope.message ).then( function ( response ) {
+                                    //console.log( response )
+                                });
+                                if( !scope.$$phase )
+                                {
+                                    scope.$apply( function () {
+                                        scope.message.readed = 1;
+                                    });
+                                }
+                        }, 1000);
+                    }
+                }
+                },300);
+        }
+    }
+
+}])
 app.factory('HttpInterceptor', function($q) {
     return {
         // optional method
@@ -458,6 +458,164 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
+galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
+    {
+
+        var GalleriesService = {
+
+            upload: function (files, id)
+            {
+                if (files && files.length)
+                {
+                    var deferred = $q.defer();
+
+                    for (var i = 0; i < files.length; i++)
+                    {
+
+                        var file = files[i];
+                        Upload.upload({
+                            url: '/api/save-gallery-images',
+                            data: id,
+                            file: file
+                        }).progress(function (evt) {
+
+                        }).success(function (response) {
+                            //console.log(response);
+                            deferred.resolve( response );
+                        }).error(function (response, status)
+                        {
+                            if (status === 422)
+                            {
+                                deferred.resolve({errors: response});
+                            } else
+                            {
+                                deferred.reject();
+                            }
+                        });
+
+                    }
+                    return deferred.promise;
+                }
+            },
+            save: function( name )
+            {
+                var deferred = $q.defer();
+                var data = {
+                    name: name
+                };
+                $http.post( '/api/galleries/', data )
+                    .success( function( response )
+                    {console.log();
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            all: function( auth )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/', { params: { auth: auth } } )
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            // mine: function(id)
+            // {
+            //     var deferred = $q.defer();
+            //     $http.get( '/api/galleries/' + id)
+            //         .success( function( response )
+            //         {
+            //             deferred.resolve( response );
+            //         } )
+            //         .error( function( response, status )
+            //         {
+            //             if (status === 422)
+            //             {
+            //                 deferred.resolve({errors: response});
+            //             } else
+            //             {
+            //                 deferred.reject();
+            //             }
+            //         } );
+            //
+            //     return deferred.promise;
+            //
+            // },
+            gallery: function(id)
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+            delete: function(id)
+            {
+                var deferred = $q.defer();
+                $http.delete( '/api/galleries/' + id)
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function( response, status )
+                    {
+                        if (status === 422)
+                        {
+                            deferred.resolve({errors: response});
+                        } else
+                        {
+                            deferred.reject();
+                        }
+                    } );
+
+                return deferred.promise;
+
+            },
+
+        };
+        return GalleriesService;
+    }] );
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -618,164 +776,29 @@ galleries.controller('MineGalleriesController', ['$scope', '$controller', functi
 
 }]);
 
-galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
-    {
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
 
-        var GalleriesService = {
-
-            upload: function (files, id)
-            {
-                if (files && files.length)
-                {
-                    var deferred = $q.defer();
-
-                    for (var i = 0; i < files.length; i++)
-                    {
-
-                        var file = files[i];
-                        Upload.upload({
-                            url: '/api/save-gallery-images',
-                            data: id,
-                            file: file
-                        }).progress(function (evt) {
-
-                        }).success(function (response) {
-                            //console.log(response);
-                            deferred.resolve( response );
-                        }).error(function (response, status)
-                        {
-                            if (status === 422)
-                            {
-                                deferred.resolve({errors: response});
-                            } else
-                            {
-                                deferred.reject();
-                            }
-                        });
-
-                    }
-                    return deferred.promise;
-                }
-            },
-            save: function( name )
-            {
-                var deferred = $q.defer();
-                var data = {
-                    name: name
-                };
-                $http.post( '/api/galleries/', data )
-                    .success( function( response )
-                    {console.log();
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            all: function( auth )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/', { params: { auth: auth } } )
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            // mine: function(id)
-            // {
-            //     var deferred = $q.defer();
-            //     $http.get( '/api/galleries/' + id)
-            //         .success( function( response )
-            //         {
-            //             deferred.resolve( response );
-            //         } )
-            //         .error( function( response, status )
-            //         {
-            //             if (status === 422)
-            //             {
-            //                 deferred.resolve({errors: response});
-            //             } else
-            //             {
-            //                 deferred.reject();
-            //             }
-            //         } );
-            //
-            //     return deferred.promise;
-            //
-            // },
-            gallery: function(id)
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-            delete: function(id)
-            {
-                var deferred = $q.defer();
-                $http.delete( '/api/galleries/' + id)
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function( response, status )
-                    {
-                        if (status === 422)
-                        {
-                            deferred.resolve({errors: response});
-                        } else
-                        {
-                            deferred.reject();
-                        }
-                    } );
-
-                return deferred.promise;
-
-            },
-
-        };
-        return GalleriesService;
-    }] );
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -886,29 +909,6 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', function ( $scope, MessageService, UserService ) {
 
     $scope.friendId = null;
@@ -934,6 +934,9 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     this.$onInit = function () {
         $scope.messangers();
+
+
+
     };
 
     $scope.messangers = function()
@@ -954,9 +957,26 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     {
         $scope.loading = true;
         $scope.friendId = id;
+        $scope.next_page = 1;
+        $scope.per_page = 10;
         MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
         {
-            //$scope.messages = response;
+            $scope.messages = response.data;
+            $scope.next_page = response.current_page + 1;
+            $scope.per_page = response.per_page;
+            $scope.current_page = response.current_page;
+            $scope.last_page = response.last_page;
+            $scope.total = response.total;
+            $scope.loading = false;
+        });
+    };
+
+    $scope.paginateMessages = function( id )
+    {
+        $scope.loading = true;
+        $scope.friendId = id;
+        MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
+        {
             response.data.forEach(function (message) {
                 $scope.messages.push( message );
             });
@@ -966,11 +986,9 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
             $scope.current_page = response.current_page;
             $scope.last_page = response.last_page;
             $scope.total = response.total;
-console.log(response)
             $scope.loading = false;
         });
     };
-
     $scope.sendMessage = function()
     {
         $scope.message.messageText = $scope.messageBody;
@@ -1025,13 +1043,22 @@ console.log(response)
         $('#search-results').show();
     }
 
-    $(window).scroll(function() {
-        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
-            if($scope.current_page != $scope.last_page){
-                $scope.getMessagesFromUser( $scope.friendId );
-            }
+
+
+    angular.element($('#messages-wrap' )).bind("scroll", function() {
+        if( ( $('#messages-container').offset().top + $('#messages-container').height() - 1 ) < $('#messages-wrap').offset().top + $('#messages-wrap').height() && $scope.loading == false ){
+                    if($scope.current_page != $scope.last_page){
+                        $scope.paginateMessages( $scope.friendId );
+                    }
         }
     });
+    // $(window).scroll(function() {
+    //     if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
+    //         if($scope.current_page != $scope.last_page){
+    //             $scope.paginateMessages( $scope.friendId );
+    //         }
+    //     }
+    // });
 
     
 }]);

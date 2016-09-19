@@ -23,6 +23,9 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     this.$onInit = function () {
         $scope.messangers();
+
+
+
     };
 
     $scope.messangers = function()
@@ -43,9 +46,26 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
     {
         $scope.loading = true;
         $scope.friendId = id;
+        $scope.next_page = 1;
+        $scope.per_page = 10;
         MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
         {
-            //$scope.messages = response;
+            $scope.messages = response.data;
+            $scope.next_page = response.current_page + 1;
+            $scope.per_page = response.per_page;
+            $scope.current_page = response.current_page;
+            $scope.last_page = response.last_page;
+            $scope.total = response.total;
+            $scope.loading = false;
+        });
+    };
+
+    $scope.paginateMessages = function( id )
+    {
+        $scope.loading = true;
+        $scope.friendId = id;
+        MessageService.getMessages( id, $scope.per_page, $scope.next_page ).then( function( response )
+        {
             response.data.forEach(function (message) {
                 $scope.messages.push( message );
             });
@@ -55,11 +75,9 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
             $scope.current_page = response.current_page;
             $scope.last_page = response.last_page;
             $scope.total = response.total;
-console.log(response)
             $scope.loading = false;
         });
     };
-
     $scope.sendMessage = function()
     {
         $scope.message.messageText = $scope.messageBody;
@@ -114,13 +132,22 @@ console.log(response)
         $('#search-results').show();
     }
 
-    $(window).scroll(function() {
-        if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
-            if($scope.current_page != $scope.last_page){
-                $scope.getMessagesFromUser( $scope.friendId );
-            }
+
+
+    angular.element($('#messages-wrap' )).bind("scroll", function() {
+        if( ( $('#messages-container').offset().top + $('#messages-container').height() - 1 ) < $('#messages-wrap').offset().top + $('#messages-wrap').height() && $scope.loading == false ){
+                    if($scope.current_page != $scope.last_page){
+                        $scope.paginateMessages( $scope.friendId );
+                    }
         }
     });
+    // $(window).scroll(function() {
+    //     if($(window).scrollTop() == $(document).height() - $(window).height() && $scope.loading == false ){
+    //         if($scope.current_page != $scope.last_page){
+    //             $scope.paginateMessages( $scope.friendId );
+    //         }
+    //     }
+    // });
 
     
 }]);
