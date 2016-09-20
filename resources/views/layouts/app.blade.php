@@ -43,7 +43,7 @@
     </div>
 
     <!-- JavaScripts -->
-    <script src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="js/vendor/jquery-2.2.4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/lodash/4.14.2/lodash.min.js"></script>

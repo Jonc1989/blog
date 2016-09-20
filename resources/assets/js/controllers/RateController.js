@@ -2,24 +2,24 @@ app.controller('RateController', ['$scope', 'RatingService', '$rootScope', funct
 
 
     $scope.stars = [];
-
+    $scope.rating = {};
     this.$onInit = function () {
 
-        // $scope.rating = {
-        //     id: '',
-        //     rate: this.rating,
-        //     userId: $rootScope.authId,
-        //     postId: this.postId,
-        //     type: this.type
-        // };
+        $scope.rating = {
+            id: '',
+            rate: this.rating,
+            userId: $rootScope.authId,
+            postId: this.postId,
+            type: this.type
+        };
 
 
         console.log( this.image );
-        $scope.authId = $rootScope.authId;
-        $scope.postId = this.postId;
-        $scope.rating = this.rating;
-        $scope.max = this.max;
-        $scope.type = this.type;
+        // $scope.authId = $rootScope.authId;
+        // $scope.postId = this.postId;
+        // $scope.rating = this.rating;
+         $scope.max = this.max;
+        // $scope.type = this.type;
         $scope.stars = $scope.countStars( this.rating, this.max );
     };
 
@@ -33,7 +33,7 @@ app.controller('RateController', ['$scope', 'RatingService', '$rootScope', funct
     };
 
     $scope.setRating = function( rating ) {
-        $scope.rating = rating;
+        $scope.rating.rate = rating;
         $scope.stars = $scope.countStars( rating, $scope.max );
     };
 
@@ -43,8 +43,12 @@ app.controller('RateController', ['$scope', 'RatingService', '$rootScope', funct
         // })
     };
 
-    // this.$onChanges = function ( bindings) {
-    //     console.log(bindings)
-    //     $scope.setRating( $scope.rating );
-    // };
+    this.$onChanges = function ( bindings) {
+        console.log( bindings);
+        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.rating.postId ){
+            
+        }
+
+        //$scope.setRating( $scope.rating );
+    };
 }]);

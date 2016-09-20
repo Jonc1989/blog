@@ -56,7 +56,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
             {
                 $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
                 $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
-                $scope.gallery.images[$scope.currentImageIndex].rating != null ? $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating.rate : 0;
+                $scope.gallery.images[$scope.currentImageIndex].rating != null ? $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating.rate : $scope.rating = 0;
 
             }
 
