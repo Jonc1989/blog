@@ -1,11 +1,15 @@
 <div class="container">
 
-    @if (\Session::has('message'))
+    @if (\Session::has('wrong_credentials'))
         <div class="alert alert-success">
             <ul>
-                <li>{!! \Session::get('message') !!}</li>
+                <li>{!! \Session::get('wrong_credentials') !!}<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a></li>
             </ul>
         </div>
+        <script>
+            $('div.alert').delay(3000).slideUp(300);
+        </script>
+        <?= \Session::forget('wrong_credentials')?>
     @endif
 
     <div class="row">

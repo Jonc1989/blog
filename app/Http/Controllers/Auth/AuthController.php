@@ -80,6 +80,7 @@ class AuthController extends ApiController
         $credentials = $this->getCredentials($request); //\Log::info($credentials);
 
         if (Auth::guard($this->getGuard())->attempt($credentials, $request->has('remember'))) {
+            session()->forget('wrong_credentials');
             return $this->handleUserWasAuthenticated($request, $throttles);
         }
 
@@ -89,7 +90,7 @@ class AuthController extends ApiController
         if ($throttles && ! $lockedOut) {
             $this->incrementLoginAttempts($request);
         }
-        
+        session(['wrong_credentials' => 'Lietotāja vārds vai parole nav pareiza.']);
         return $this->sendFailedLoginResponse($request);
     }
     
