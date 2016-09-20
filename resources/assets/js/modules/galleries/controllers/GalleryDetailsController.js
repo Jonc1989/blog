@@ -6,6 +6,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         $scope.currentImagePath = '';
         $scope.currentImageIndex = null;
         $scope.currentImageId = null;
+        $scope.rating = null;
         this.$onInit = function()
         {
             GalleriesService.gallery($scope.id).then(function(response)
@@ -55,6 +56,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
             {
                 $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
                 $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
+                $scope.gallery.images[$scope.currentImageIndex].rating != null ? $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating.rate : 0;
 
             }
 

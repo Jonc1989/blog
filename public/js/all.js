@@ -15,70 +15,6 @@ var app = angular.module( 'app', [
         {
             $httpProvider.interceptors.push('HttpInterceptor');
         }]);
-app.component( 'auth', {
-    templateUrl: '/api/view/layouts.api.auth',
-    controller: 'AuthController',
-});
-app.component( 'menuComponent', {
-    templateUrl: '/api/view/layouts.api.menu',
-    controller: 'MenuController',
-    bindings: {
-        authId: '<'
-    }
-})
-app.directive('map', function () {
-    return {
-        link: function(scope, elem, attrs) {
-            var div= $('<div/>', { id: 'map_' + attrs.id });
-            $(elem).append( div );
-            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
-                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
-                zoom: 13,
-                mapTypeId: 'roadmap'
-            });
-        }
-    }
-});
-app.directive("scroll", [ 'MessageService', function ( MessageService ) {
-    return {
-        link: function(scope, element, attrs) {
-                setTimeout(function () {
-                    if( attrs.authId != scope.message.sender_id ){
-                        check();
-                        angular.element($('#' + attrs.parent )).bind("scroll", function() {
-                            check()
-                        });
-                        function check() {
-                            if( scope.message.readed == 0 ){
-                                var diff = $('#' + attrs.parent).offset().top + $('#' + attrs.parent).height();
-                                if ( diff > $( '#' + attrs.id).offset().top ) {
-
-                                    setAsReaded();
-
-                                }
-                            }
-                        }
-
-                        function setAsReaded() {
-                            setTimeout(function () {
-                                scope.message.readed = 1;
-                                MessageService.markReaded( scope.message ).then( function ( response ) {
-                                    //console.log( response )
-                                });
-                                if( !scope.$$phase )
-                                {
-                                    scope.$apply( function () {
-                                        scope.message.readed = 1;
-                                    });
-                                }
-                        }, 1000);
-                    }
-                }
-                },300);
-        }
-    }
-
-}])
 app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
 
     $scope.EMAIL = ValidationService.email;
@@ -135,6 +71,132 @@ app.controller('MenuController', ['$scope', '$rootScope', 'SocketFactory', 'Mess
     }
 }]);
 
+app.controller('RateController', ['$scope', 'RatingService', '$rootScope', function( $scope, RatingService, $rootScope ) {
+
+
+    $scope.stars = [];
+
+    this.$onInit = function () {
+
+        // $scope.rating = {
+        //     id: '',
+        //     rate: this.rating,
+        //     userId: $rootScope.authId,
+        //     postId: this.postId,
+        //     type: this.type
+        // };
+
+
+        console.log( this.image );
+        $scope.authId = $rootScope.authId;
+        $scope.postId = this.postId;
+        $scope.rating = this.rating;
+        $scope.max = this.max;
+        $scope.type = this.type;
+        $scope.stars = $scope.countStars( this.rating, this.max );
+    };
+
+     $scope.countStars = function( value, max ) {
+        var entries = [];
+        for( var i = 1; i <= max; i++ ){
+            var icon = i <= value ? "glyphicon-star" : "glyphicon-star-empty";
+            entries.push(icon);
+        }
+        return entries;
+    };
+
+    $scope.setRating = function( rating ) {
+        $scope.rating = rating;
+        $scope.stars = $scope.countStars( rating, $scope.max );
+    };
+
+    $scope.saveRating = function (){
+        // RatingService.rate( $scope.authId, $scope.rating, $scope.type ).then(function(){
+        //
+        // })
+    };
+
+    // this.$onChanges = function ( bindings) {
+    //     console.log(bindings)
+    //     $scope.setRating( $scope.rating );
+    // };
+}]);
+
+app.component( 'auth', {
+    templateUrl: '/api/view/layouts.api.auth',
+    controller: 'AuthController',
+});
+app.component( 'menuComponent', {
+    templateUrl: '/api/view/layouts.api.menu',
+    controller: 'MenuController',
+    bindings: {
+        authId: '<'
+    }
+})
+app.component( 'rate', {
+    templateUrl: '/api/view/layouts.api.rate',
+    controller: 'RateController',
+    bindings: {
+        rating: "<",
+        max: "<",
+        postId: '<',
+        setRating: "&",
+        image: '<'
+    }
+});
+app.directive('map', function () {
+    return {
+        link: function(scope, elem, attrs) {
+            var div= $('<div/>', { id: 'map_' + attrs.id });
+            $(elem).append( div );
+            var map = new google.maps.Map(document.getElementById('map_' + attrs.id), {
+                center: {lat: parseFloat(attrs.latitude), lng: parseFloat(attrs.longitude) },
+                zoom: 13,
+                mapTypeId: 'roadmap'
+            });
+        }
+    }
+});
+app.directive("scroll", [ 'MessageService', function ( MessageService ) {
+    return {
+        link: function(scope, element, attrs) {
+                setTimeout(function () {
+                    if( attrs.authId != scope.message.sender_id ){
+                        check();
+                        angular.element($('#' + attrs.parent )).bind("scroll", function() {
+                            check()
+                        });
+                        function check() {
+                            if( scope.message.readed == 0 ){
+                                var diff = $('#' + attrs.parent).offset().top + $('#' + attrs.parent).height();
+                                if ( diff > $( '#' + attrs.id).offset().top ) {
+
+                                    setAsReaded();
+
+                                }
+                            }
+                        }
+
+                        function setAsReaded() {
+                            setTimeout(function () {
+                                scope.message.readed = 1;
+                                MessageService.markReaded( scope.message ).then( function ( response ) {
+                                    //console.log( response )
+                                });
+                                if( !scope.$$phase )
+                                {
+                                    scope.$apply( function () {
+                                        scope.message.readed = 1;
+                                    });
+                                }
+                        }, 1000);
+                    }
+                }
+                },300);
+        }
+    }
+
+}])
 app.factory('HttpInterceptor', function($q) {
     return {
         // optional method
@@ -172,6 +234,35 @@ app.factory('HttpInterceptor', function($q) {
     };
 });
 
+app.service( 'RatingService', ['$http', '$q', function( $http, $q )
+{
+    var RatingService = {
+
+        rate: function(message)
+        {
+            var deferred = $q.defer();
+            $http.post( '/api/messages', message )
+                .success( function( response )
+                {
+                    deferred.resolve( response.data );
+                } )
+                .error( function()
+                {
+                    if ( status == 422 )
+                    {
+                        deferred.resolve( { errors: response } );
+                    } else
+                    {
+                        deferred.reject();
+                    }
+                } );
+
+            return deferred.promise;
+        }
+ 
+    };
+    return RatingService;
+}] );
 app.factory('SocketFactory', function ($rootScope) {
     var socket = io('http://localhost:3000');
     return {
@@ -227,10 +318,6 @@ app.factory( 'ValidationService', [ function()
 var comments = angular.module('comments', [
 
 ])
-var home = angular.module('home', [
-
-]);
-
 var galleries = angular.module('galleries', [
 
 ]).config([ '$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
@@ -264,6 +351,10 @@ var galleries = angular.module('galleries', [
 
 
 }]);
+
+var home = angular.module('home', [
+
+]);
 
 var messages = angular.module('messages', [
 
@@ -394,29 +485,6 @@ comments.controller( 'CommentsController', [ 'UserService', '$scope', 'CommentsS
         });
     };
 }]);
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
 {
 
@@ -482,116 +550,6 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
-user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-    $scope.user = null;
-
-
-    this.$onInit = function () {
-        var details = [ 'id', 'name', 'surname', 'photo' ];
-        UserService.getUser( this.id, details ).then( function( response )
-        {
-            $scope.user = response;
-        });
-        
-    };
-    
-}]);
-home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.invitations = [];
-    this.$onInit = function () {
-        $scope.getInvitations();
-    };
-    
-    $scope.getInvitations = function () {
-        UserService.invitations().then( function( response )  {
-            $scope.invitations = response;
-        });
-    };
-    
-    $scope.accept = function ( id ) {
-        UserService.changeStatus( id, 3 ).then( function( response )  {
-            
-            $scope.$broadcast('invitation-accepted');
-        });
-    };
-
-    $scope.$on('invitation-accepted', function(event, args) {
-        $scope.getInvitations();
-    });
-}]);
-home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
-    $scope.users = [];
-    $scope.details = ['id', 'name', 'surname', 'photo'];
-
-    $scope.animationColors = [
-        'success',
-        'info',
-        'warning',
-        'danger'
-    ];
-
-    this.$onInit = function () {
-
-        $scope.getUsers();
-
-        SocketFactory.on('user-online', function (data) {
-            $scope.newUser = data.user;
-            ngToast.create({
-                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
-                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
-                timeout: 5000,
-                verticalPosition: 'bottom'
-            });
-
-            $scope.getUsers();
-            //ngToast.dismiss(msg);
-            // ngToast.dismiss();
-        });
-    };
-
-    $scope.getUsers = function () {
-        UserService.onlineUsers( $scope.details ).then( function( response )
-        {
-            $scope.users = response;
-        });
-    }
-
-}]);
-user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
-
-    $scope.searchKey = '';
-    $scope.searchResults = [];
-    
-    $scope.search = function()
-    {
-        if( $scope.searchKey.length > 2)
-        {
-            UserService.search($scope.searchKey).then( function( response )
-            {
-                console.log(response);
-                $scope.searchResults = response;
-            });
-        }else if( $scope.searchKey.length < 1 ){
-            $scope.searchResults = [];
-        }
-    };
-    
-    $scope.showUser = function(id)
-    {
-        window.location.href = '/user/' + id;
-    };
-
-    $scope.hideSearchResults = function () {
-        setTimeout( function () {
-            $('#search-results').hide();
-        }, 100 );
-    }
-
-    $scope.showSearchResults = function () {
-        $('#search-results').show();
-    }
-}]);
 galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
     
     
@@ -686,6 +644,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
         $scope.currentImagePath = '';
         $scope.currentImageIndex = null;
         $scope.currentImageId = null;
+        $scope.rating = null;
         this.$onInit = function()
         {
             GalleriesService.gallery($scope.id).then(function(response)
@@ -735,6 +694,7 @@ galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', 
             {
                 $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
                 $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
+                $scope.gallery.images[$scope.currentImageIndex].rating != null ? $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating.rate : 0;
 
             }
 
@@ -910,6 +870,139 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
+user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+    $scope.user = null;
+
+
+    this.$onInit = function () {
+        var details = [ 'id', 'name', 'surname', 'photo' ];
+        UserService.getUser( this.id, details ).then( function( response )
+        {
+            $scope.user = response;
+        });
+        
+    };
+    
+}]);
+home.controller( 'InvitationsController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.invitations = [];
+    this.$onInit = function () {
+        $scope.getInvitations();
+    };
+    
+    $scope.getInvitations = function () {
+        UserService.invitations().then( function( response )  {
+            $scope.invitations = response;
+        });
+    };
+    
+    $scope.accept = function ( id ) {
+        UserService.changeStatus( id, 3 ).then( function( response )  {
+            
+            $scope.$broadcast('invitation-accepted');
+        });
+    };
+
+    $scope.$on('invitation-accepted', function(event, args) {
+        $scope.getInvitations();
+    });
+}]);
+home.controller( 'OnlineController', [ 'UserService', '$scope', 'SocketFactory', 'ngToast', function ( UserService, $scope, SocketFactory, ngToast ) {
+    $scope.users = [];
+    $scope.details = ['id', 'name', 'surname', 'photo'];
+
+    $scope.animationColors = [
+        'success',
+        'info',
+        'warning',
+        'danger'
+    ];
+
+    this.$onInit = function () {
+
+        $scope.getUsers();
+
+        SocketFactory.on('user-online', function (data) {
+            $scope.newUser = data.user;
+            ngToast.create({
+                className: $scope.animationColors[Math.floor(Math.random() * $scope.animationColors.length)].toString(),
+                content: '<a href="/user/' + $scope.newUser.id + '" class="">' + $scope.newUser.name + ' ' + $scope.newUser.surname + ' pieslēdzās</a>',
+                timeout: 5000,
+                verticalPosition: 'bottom'
+            });
+
+            $scope.getUsers();
+            //ngToast.dismiss(msg);
+            // ngToast.dismiss();
+        });
+    };
+
+    $scope.getUsers = function () {
+        UserService.onlineUsers( $scope.details ).then( function( response )
+        {
+            $scope.users = response;
+        });
+    }
+
+}]);
+user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserService, $scope ) {
+
+    $scope.searchKey = '';
+    $scope.searchResults = [];
+    
+    $scope.search = function()
+    {
+        if( $scope.searchKey.length > 2)
+        {
+            UserService.search($scope.searchKey).then( function( response )
+            {
+                console.log(response);
+                $scope.searchResults = response;
+            });
+        }else if( $scope.searchKey.length < 1 ){
+            $scope.searchResults = [];
+        }
+    };
+    
+    $scope.showUser = function(id)
+    {
+        window.location.href = '/user/' + id;
+    };
+
+    $scope.hideSearchResults = function () {
+        setTimeout( function () {
+            $('#search-results').hide();
+        }, 100 );
+    }
+
+    $scope.showSearchResults = function () {
+        $('#search-results').show();
+    }
+}]);
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', 'SocketFactory', '$rootScope', 
     function ( $scope, MessageService, UserService, SocketFactory, $rootScope ) {
 

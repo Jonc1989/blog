@@ -22,5 +22,9 @@ class Images extends Model {
     {
         return $this->hasMany( 'App\Modules\Common\Models\Likes', 'post_id' );
     }
-    
+
+    public function rating()
+    {
+        return $this->hasOne( 'App\Modules\Galleries\Models\Ratings', 'post_id' );
+    }
 }
