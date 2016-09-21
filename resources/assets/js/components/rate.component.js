@@ -5,7 +5,6 @@ app.component( 'rate', {
         rating: "<",
         max: "<",
         postId: '<',
-        setRating: "&",
-        image: '<'
+        setRating: "&"
     }
 });

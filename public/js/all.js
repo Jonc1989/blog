@@ -33,8 +33,7 @@ app.component( 'rate', {
         rating: "<",
         max: "<",
         postId: '<',
-        setRating: "&",
-        image: '<'
+        setRating: "&"
     }
 });
 app.controller('AuthController', ['$scope', 'ValidationService', function( $scope, ValidationService ) {
@@ -102,20 +101,19 @@ app.controller('RateController', ['$scope', 'RatingService', '$rootScope', funct
 
         $scope.rating = {
             id: '',
-            rate: this.rating,
-            userId: $rootScope.authId,
-            postId: this.postId,
+            rate: this.rating != null ? this.rating.rate : null,
+            user_id: $rootScope.authId,
+            post_id: this.postId,
             type: this.type
         };
 
 
-        console.log( this.image );
         // $scope.authId = $rootScope.authId;
         // $scope.postId = this.postId;
         // $scope.rating = this.rating;
          $scope.max = this.max;
         // $scope.type = this.type;
-        $scope.stars = $scope.countStars( this.rating, this.max );
+        $scope.stars = $scope.countStars( $scope.rating.rate, $scope.max );
     };
 
      $scope.countStars = function( value, max ) {
@@ -130,21 +128,29 @@ app.controller('RateController', ['$scope', 'RatingService', '$rootScope', funct
     $scope.setRating = function( rating ) {
         $scope.rating.rate = rating;
         $scope.stars = $scope.countStars( rating, $scope.max );
+        $scope.saveRating();
     };
 
     $scope.saveRating = function (){
-        // RatingService.rate( $scope.authId, $scope.rating, $scope.type ).then(function(){
+        // RatingService.rate( $scope.rating ).then(function(){
         //
         // })
     };
 
     this.$onChanges = function ( bindings) {
-        console.log( bindings);
-        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.rating.postId ){
 
+        if( bindings.postId !== undefined && bindings.postId.currentValue !== $scope.rating.post_id ){
+            console.log( bindings );
+        }
+        if( bindings.rating !== undefined ){
+            if( bindings.rating.rate !== undefined && bindings.rating.currentValue.rate !== $scope.rating.rate ){
+                $scope.rating = bindings.rating.currentValue;
+
+                bindings.rating.currentValue !== null ? $scope.setRating( null ) : $scope.setRating( bindings.rating.currentValue.rate )
+            }
         }
 
-        //$scope.setRating( $scope.rating );
+
     };
 }]);
 
@@ -242,10 +248,10 @@ app.service( 'RatingService', ['$http', '$q', function( $http, $q )
 {
     var RatingService = {
 
-        rate: function(message)
+        rate: function(rating)
         {
             var deferred = $q.defer();
-            $http.post( '/api/messages', message )
+            $http.post( '/api/common/rate', rating )
                 .success( function( response )
                 {
                     deferred.resolve( response.data );
@@ -554,6 +560,168 @@ comments.service( 'CommentsService', ['$http', '$q', function( $http, $q )
     };
     return CommentsService;
 }] );
+galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
+    
+    
+    this.$onInit = function () {
+        $controller('GalleriesController', { $scope: $scope });
+        $scope.getGalleries( false );
+    };
+
+}]);
+
+galleries.controller('GalleriesController', ['$scope', 'GalleriesService', '$state', function($scope,
+                                                                        GalleriesService, $state ) {
+
+    $scope.galleryData = [];
+    
+    this.$onInit = function () {
+        $state.go( 'all' );
+    };
+    
+    $scope.getGalleries = function(auth)
+    {
+        GalleriesService.all(auth).then(function(response)
+        {
+            $scope.galleryData = response;
+        });
+    };
+    //
+    // $scope.mineGalleries = function( auth )
+    // {
+    //     GalleriesService.all(auth).then(function(response)
+    //     {
+    //         $scope.galleryData = response;
+    //     });
+    // };
+
+}]);
+
+galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', 'Upload', function($scope,
+                                                                                              GalleriesService, Upload) {
+    $scope.name = '';
+    $scope.files = null;
+    $scope.uploaded = false;
+    $scope.gallerySaved = false;
+
+    $scope.$watch('files', function () {
+        if ($scope.files != '') {
+            $scope.previewFiles = $scope.files;
+        }
+    });
+
+    $scope.save = function()
+    {
+        if( $scope.name != '' )
+        {
+            Upload.upload({
+                url: '/api/galleries/',
+                data: { files: $scope.files, name: $scope.name }}
+            ).success(function (response) {
+                $scope.files = null;
+                $scope.clearInputs();
+            });
+
+        }
+    };
+
+    $scope.clearInputs = function () {
+        $scope.name = '';
+    };
+
+
+    $scope.deleteImage = function(image)
+    {
+  console.log( image );
+
+        for( var i = 0; i < $scope.files.length; i++)
+        {
+            if ($scope.files[i].name === image.name ) {
+                $scope.files.splice(i, 1);
+            }
+        }
+
+    };
+    
+
+}]);
+
+galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', '$stateParams',
+    function($scope, GalleriesService, $stateParams) {
+        
+        $scope.id = $stateParams.id;
+        $scope.gallery = {};
+        $scope.currentImagePath = '';
+        $scope.currentImageIndex = null;
+        $scope.currentImageId = null;
+        $scope.rating = null;
+        this.$onInit = function()
+        {
+            GalleriesService.gallery($scope.id).then(function(response)
+            {
+                $scope.gallery = response;
+            });
+        };
+
+        $scope.open = function ( image ) {
+
+            $scope.currentImagePath = image.file_name;
+            $.each( $scope.gallery.images, function (i, img) {
+                if( img.id == image.id ){
+
+                    $scope.currentImageIndex = i;
+                }
+            });
+
+            $('#imageModal').modal('show')
+        };
+
+        $scope.next = function ()
+        {
+            if( $scope.currentImageIndex < ($scope.gallery.images.length - 1) )
+            {
+                $scope.currentImageIndex++;
+            }else{
+                $scope.currentImageIndex = 0;
+            }
+
+        };
+
+        $scope.previous = function ()
+        {
+            if( $scope.currentImageIndex <= ($scope.gallery.images.length - 1) && $scope.currentImageIndex > 0)
+            {
+                $scope.currentImageIndex--;
+            }else{
+                $scope.currentImageIndex = ($scope.gallery.images.length - 1);
+            }
+        };
+
+
+        $scope.$watch( 'currentImageIndex', function( newVal, oldVal )
+        {
+            if( newVal !== oldVal  )
+            {
+                $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
+                $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
+                $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating; console.log( $scope.rating );
+
+            }
+
+        }, true );
+
+    }]);
+
+galleries.controller('MineGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
+
+    this.$onInit = function () {
+        $controller('GalleriesController', { $scope: $scope });
+        $scope.getGalleries( true );
+    };
+
+
+}]);
+
 galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http, $q, Upload )
     {
 
@@ -712,191 +880,6 @@ galleries.service( 'GalleriesService', ['$http', '$q', 'Upload', function( $http
         };
         return GalleriesService;
     }] );
-galleries.controller('FriendGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
-    
-    
-    this.$onInit = function () {
-        $controller('GalleriesController', { $scope: $scope });
-        $scope.getGalleries( false );
-    };
-
-}]);
-
-galleries.controller('GalleriesController', ['$scope', 'GalleriesService', '$state', function($scope,
-                                                                        GalleriesService, $state ) {
-
-    $scope.galleryData = [];
-    
-    this.$onInit = function () {
-        $state.go( 'all' );
-    };
-    
-    $scope.getGalleries = function(auth)
-    {
-        GalleriesService.all(auth).then(function(response)
-        {
-            $scope.galleryData = response;
-        });
-    };
-    //
-    // $scope.mineGalleries = function( auth )
-    // {
-    //     GalleriesService.all(auth).then(function(response)
-    //     {
-    //         $scope.galleryData = response;
-    //     });
-    // };
-
-}]);
-
-galleries.controller('GalleryCreateController', ['$scope', 'GalleriesService', 'Upload', function($scope,
-                                                                                              GalleriesService, Upload) {
-    $scope.name = '';
-    $scope.files = null;
-    $scope.uploaded = false;
-    $scope.gallerySaved = false;
-
-    $scope.$watch('files', function () {
-        if ($scope.files != '') {
-            $scope.previewFiles = $scope.files;
-        }
-    });
-
-    $scope.save = function()
-    {
-        if( $scope.name != '' )
-        {
-            Upload.upload({
-                url: '/api/galleries/',
-                data: { files: $scope.files, name: $scope.name }}
-            ).success(function (response) {
-                $scope.files = null;
-                $scope.clearInputs();
-            });
-
-        }
-    };
-
-    $scope.clearInputs = function () {
-        $scope.name = '';
-    };
-
-
-    $scope.deleteImage = function(image)
-    {
-  console.log( image );
-
-        for( var i = 0; i < $scope.files.length; i++)
-        {
-            if ($scope.files[i].name === image.name ) {
-                $scope.files.splice(i, 1);
-            }
-        }
-
-    };
-    
-
-}]);
-
-galleries.controller('GalleryDetailsController', ['$scope', 'GalleriesService', '$stateParams',
-    function($scope, GalleriesService, $stateParams) {
-        
-        $scope.id = $stateParams.id;
-        $scope.gallery = {};
-        $scope.currentImagePath = '';
-        $scope.currentImageIndex = null;
-        $scope.currentImageId = null;
-        $scope.rating = null;
-        this.$onInit = function()
-        {
-            GalleriesService.gallery($scope.id).then(function(response)
-            {
-                $scope.gallery = response;
-            });
-        };
-
-        $scope.open = function ( image ) {
-
-            $scope.currentImagePath = image.file_name;
-            $.each( $scope.gallery.images, function (i, img) {
-                if( img.id == image.id ){
-
-                    $scope.currentImageIndex = i;
-                }
-            });
-
-            $('#imageModal').modal('show')
-        };
-
-        $scope.next = function ()
-        {
-            if( $scope.currentImageIndex < ($scope.gallery.images.length - 1) )
-            {
-                $scope.currentImageIndex++;
-            }else{
-                $scope.currentImageIndex = 0;
-            }
-
-        };
-
-        $scope.previous = function ()
-        {
-            if( $scope.currentImageIndex <= ($scope.gallery.images.length - 1) && $scope.currentImageIndex > 0)
-            {
-                $scope.currentImageIndex--;
-            }else{
-                $scope.currentImageIndex = ($scope.gallery.images.length - 1);
-            }
-        };
-
-
-        $scope.$watch( 'currentImageIndex', function( newVal, oldVal )
-        {
-            if( newVal !== oldVal  )
-            {
-                $scope.currentImageId = $scope.gallery.images[$scope.currentImageIndex].id;
-                $scope.currentImagePath = $scope.gallery.images[$scope.currentImageIndex].file_name;
-                $scope.gallery.images[$scope.currentImageIndex].rating != null ? $scope.rating = $scope.gallery.images[$scope.currentImageIndex].rating.rate : $scope.rating = 0;
-
-            }
-
-        }, true );
-
-    }]);
-
-galleries.controller('MineGalleriesController', ['$scope', '$controller', function($scope, $controller ) {
-
-    this.$onInit = function () {
-        $controller('GalleriesController', { $scope: $scope });
-        $scope.getGalleries( true );
-    };
-
-
-}]);
-
-/**
- * Created by Janis on 06.08.2016..
- */
-app.component( 'info', {
-    templateUrl: '/api/view/modules.home.api.info',
-    controller: 'InfoController',
-    bindings: {
-        id: '<'
-    }
-})
-home.component( 'invitations', {
-    templateUrl: '/api/view/modules.home.api.invitations',
-    controller: 'InvitationsController'
-})
-
-app.component( 'online', {
-    templateUrl: '/api/view/modules.home.api.online',
-    controller: 'OnlineController'
-})
-app.component( 'search', {
-    templateUrl: '/api/view/modules.home.api.search',
-    controller: 'SearchController'
-})
 user.controller( 'InfoController', [ 'UserService', '$scope', function ( UserService, $scope ) {
     $scope.user = null;
 
@@ -1007,6 +990,29 @@ user.controller( 'SearchController', [ 'UserService', '$scope', function ( UserS
         $('#search-results').show();
     }
 }]);
+/**
+ * Created by Janis on 06.08.2016..
+ */
+app.component( 'info', {
+    templateUrl: '/api/view/modules.home.api.info',
+    controller: 'InfoController',
+    bindings: {
+        id: '<'
+    }
+})
+home.component( 'invitations', {
+    templateUrl: '/api/view/modules.home.api.invitations',
+    controller: 'InvitationsController'
+})
+
+app.component( 'online', {
+    templateUrl: '/api/view/modules.home.api.online',
+    controller: 'OnlineController'
+})
+app.component( 'search', {
+    templateUrl: '/api/view/modules.home.api.search',
+    controller: 'SearchController'
+})
 post.component( 'like', {
     templateUrl: '/api/view/modules.posts.api.like',
     controller: 'LikeController',
@@ -1232,6 +1238,89 @@ post.controller( 'PostController', [ 'PostService', '$scope', 'Upload', '$stateP
 
 
 }]);
+post.service( 'PostService', ['$http', '$q', function( $http, $q )
+    {
+        var PostService = {
+
+            save:  function(post, location, lat, lng, authId, userId )
+            {
+                if( post != '' ){
+                    var data = {
+                        post: post,
+                        location: location,
+                        latitude: lat,
+                        longitude: lng,
+                        authId: authId,
+                        userId: userId
+                    };
+                    var deferred = $q.defer();
+                    $http.post( '/api/posts', data )
+                        .success( function( response )
+                        {
+                            deferred.resolve( response );
+                        } )
+                        .error( function()
+                        {
+                            deferred.reject();
+                        } );
+
+                    return deferred.promise;
+                }
+            },
+
+            getPosts:  function( perPage, current, authid, userId )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/posts', { params: {per_page: perPage, current: current, authid: authid, userId: userId }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            like: function( authId, postId, status, type )
+            {
+                var deferred = $q.defer();
+                $http.post( '/api/posts/like', { params: { authId: authId, postId: postId, status: status, type: type }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            },
+
+            getLikes: function( postId, type )
+            {
+                var deferred = $q.defer();
+                $http.get( '/api/posts/likes', { params: { postId: postId, type: type }})
+                    .success( function( response )
+                    {
+                        deferred.resolve( response );
+                    } )
+                    .error( function()
+                    {
+                        deferred.reject();
+                    } );
+
+                return deferred.promise;
+
+            }
+        };
+        return PostService;
+    }] );
 messages.controller('MessagesController', ['$scope', 'MessageService', 'UserService', 'SocketFactory', '$rootScope', 
     function ( $scope, MessageService, UserService, SocketFactory, $rootScope ) {
 
@@ -1390,89 +1479,6 @@ messages.controller('MessagesController', ['$scope', 'MessageService', 'UserServ
 
     
 }]);
-post.service( 'PostService', ['$http', '$q', function( $http, $q )
-    {
-        var PostService = {
-
-            save:  function(post, location, lat, lng, authId, userId )
-            {
-                if( post != '' ){
-                    var data = {
-                        post: post,
-                        location: location,
-                        latitude: lat,
-                        longitude: lng,
-                        authId: authId,
-                        userId: userId
-                    };
-                    var deferred = $q.defer();
-                    $http.post( '/api/posts', data )
-                        .success( function( response )
-                        {
-                            deferred.resolve( response );
-                        } )
-                        .error( function()
-                        {
-                            deferred.reject();
-                        } );
-
-                    return deferred.promise;
-                }
-            },
-
-            getPosts:  function( perPage, current, authid, userId )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/posts', { params: {per_page: perPage, current: current, authid: authid, userId: userId }})
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            like: function( authId, postId, status, type )
-            {
-                var deferred = $q.defer();
-                $http.post( '/api/posts/like', { params: { authId: authId, postId: postId, status: status, type: type }})
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            },
-
-            getLikes: function( postId, type )
-            {
-                var deferred = $q.defer();
-                $http.get( '/api/posts/likes', { params: { postId: postId, type: type }})
-                    .success( function( response )
-                    {
-                        deferred.resolve( response );
-                    } )
-                    .error( function()
-                    {
-                        deferred.reject();
-                    } );
-
-                return deferred.promise;
-
-            }
-        };
-        return PostService;
-    }] );
 messages.service( 'MessageService', ['$http', '$q', function( $http, $q )
     {
         var MessageService = {

@@ -2,10 +2,10 @@ app.service( 'RatingService', ['$http', '$q', function( $http, $q )
 {
     var RatingService = {
 
-        rate: function(message)
+        rate: function(rating)
         {
             var deferred = $q.defer();
-            $http.post( '/api/messages', message )
+            $http.post( '/api/common/rate', rating )
                 .success( function( response )
                 {
                     deferred.resolve( response.data );

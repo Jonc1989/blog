@@ -27,13 +27,12 @@
                             <img ng-src="/image/{{gallery.user.id}}/{{gallery.id}}/{{currentImagePath}}">
 
                             <div>
-                                <rate rating="rating"
+                                <rate rating="gallery.images[currentImageIndex].rating"
                                       max="5"
                                       set-rating="setRating( rating )"
-                                      type="image"
+                                      type="'image'"
                                       ng-if="currentImageId"
                                       post-id="currentImageId"
-                                      image="gallery.images[currentImageIndex]"
                                 >
                                 </rate>
                             </div>

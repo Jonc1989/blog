@@ -25,6 +25,6 @@ class Images extends Model {
 
     public function rating()
     {
-        return $this->hasOne( 'App\Modules\Galleries\Models\Ratings', 'post_id' );
+        return $this->hasOne( 'App\Modules\Common\Models\Ratings', 'post_id' );
     }
 }
